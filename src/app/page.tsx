@@ -28,7 +28,10 @@ export default function Home() {
           <h1 className="text-xl text-blue-900 font-normal mb-1">
             Lily and Teagan&apos;s
           </h1>
-          <h2 className="text-5xl text-blue-900 font-bold mb-1 font-playfair">
+          <h2 
+            className="text-5xl text-blue-900 font-bold mb-1"
+            style={{ fontFamily: 'var(--font-playfair), "Times New Roman", Times, serif' }}
+          >
             Fantasy League
           </h2>
           <h3 className="text-xl text-blue-900 font-normal">
