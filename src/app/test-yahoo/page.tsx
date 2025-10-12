@@ -5,7 +5,7 @@ import { useState } from 'react';
 export default function TestYahooPage() {
   const [accessToken, setAccessToken] = useState('');
   const [leagueId, setLeagueId] = useState('');
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{ success: boolean; data?: any; error?: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const testConnection = async () => {
@@ -26,7 +26,7 @@ export default function TestYahooPage() {
 
       const data = await response.json();
       setResult(data);
-    } catch (error) {
+    } catch (_error) {
       setResult({ success: false, error: 'Network error' });
     } finally {
       setLoading(false);
@@ -102,7 +102,7 @@ export default function TestYahooPage() {
                 <div>
                   <strong>Managers:</strong>
                   <ul className="list-disc list-inside mt-2">
-                    {result.data.managers.map((manager: any, index: number) => (
+                    {result.data.managers.map((manager: { name: string; yahooTeamName: string }, index: number) => (
                       <li key={index}>{manager.name} ({manager.yahooTeamName})</li>
                     ))}
                   </ul>
@@ -111,7 +111,7 @@ export default function TestYahooPage() {
                 <div>
                   <strong>Current Week Matchups:</strong>
                   <ul className="list-disc list-inside mt-2">
-                    {result.data.matchups.map((matchup: any, index: number) => (
+                    {result.data.matchups.map((matchup: { manager1: string; manager2: string; manager1Score: number; manager2Score: number; isComplete: boolean }, index: number) => (
                       <li key={index}>
                         {matchup.manager1} vs {matchup.manager2} 
                         ({matchup.manager1Score} - {matchup.manager2Score})
@@ -133,7 +133,7 @@ export default function TestYahooPage() {
           <h3 className="text-lg font-semibold text-blue-800 mb-4">How to Get Your Credentials:</h3>
           <ol className="list-decimal list-inside space-y-2 text-blue-700">
             <li>Go to <a href="https://developer.yahoo.com/" target="_blank" rel="noopener noreferrer" className="underline">Yahoo Developer Network</a></li>
-            <li>Create a new app and select "Fantasy Sports"</li>
+            <li>Create a new app and select &quot;Fantasy Sports&quot;</li>
             <li>Get your Client ID and Client Secret</li>
             <li>Use the OAuth flow to get an access token (or use a tool like Postman)</li>
             <li>Find your League ID in your Yahoo Fantasy league URL</li>
