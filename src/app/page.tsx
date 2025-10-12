@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { TeamScore, WeeklyStandings } from '@/types';
 
 export default function Home() {
+  // L-T Fantasy Hockey - Main page
   const [teamScores, setTeamScores] = useState<{ lily: TeamScore; teagan: TeamScore } | null>(null);
   const [weeklyStandings, setWeeklyStandings] = useState<WeeklyStandings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
