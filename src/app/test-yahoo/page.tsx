@@ -84,7 +84,7 @@ export default function TestYahooPage() {
               {result.success ? '✅ Connection Successful!' : '❌ Connection Failed'}
             </h3>
             
-            {result.success ? (
+            {result.success && result.data ? (
               <div className="space-y-4">
                 <div>
                   <strong>League Name:</strong> {result.data.leagueName}
