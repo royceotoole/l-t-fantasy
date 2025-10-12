@@ -7,14 +7,14 @@ interface YahooTeam {
 }
 
 interface YahooTeamData {
-  [key: string]: [YahooTeam, any];
+  [key: string]: [YahooTeam, unknown];
 }
 
 interface YahooMatchup {
   [key: string]: [{
     teams: [YahooTeam, YahooTeam];
     status: string;
-  }, any];
+  }, unknown];
 }
 
 const YAHOO_BASE_URL = 'https://fantasysports.yahooapis.com/fantasy/v2';
