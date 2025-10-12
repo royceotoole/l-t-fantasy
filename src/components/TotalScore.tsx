@@ -101,7 +101,7 @@ export default function TotalScore({ teamScores }: TotalScoreProps) {
           ) : teagan.totalWins > lily.totalWins ? (
             <span className="text-blue-600">🏆 Team Teagan is winning!</span>
           ) : (
-            <span className="text-gray-600">🤝 It's a tie!</span>
+            <span className="text-gray-600">🤝 It&apos;s a tie!</span>
           )}
         </div>
         <div className="text-sm text-gray-500 mt-1">

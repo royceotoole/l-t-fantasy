@@ -1,6 +1,22 @@
 import axios from 'axios';
 import { YahooLeagueData, Manager, Matchup } from '@/types';
 
+interface YahooTeam {
+  team_id: string;
+  name: string;
+}
+
+interface YahooTeamData {
+  [key: string]: [YahooTeam, any];
+}
+
+interface YahooMatchup {
+  [key: string]: [{
+    teams: [YahooTeam, YahooTeam];
+    status: string;
+  }, any];
+}
+
 const YAHOO_BASE_URL = 'https://fantasysports.yahooapis.com/fantasy/v2';
 
 export class YahooFantasyAPI {
@@ -44,7 +60,7 @@ export class YahooFantasyAPI {
     const data = await this.makeRequest(`/league/${this.leagueId}/teams`);
     const teams = data.fantasy_content.league[1].teams;
     
-    return Object.values(teams).map((team: { [key: string]: any }) => ({
+    return Object.values(teams as YahooTeamData).map((team) => ({
       id: team[0].team_id,
       name: team[0].name,
       team: 'lily' as const, // This will be assigned later
@@ -61,7 +77,7 @@ export class YahooFantasyAPI {
       return [];
     }
 
-    const matchups = Object.values(scoreboard.matchups).map((matchup: { [key: string]: any }) => {
+    const matchups = Object.values(scoreboard.matchups as YahooMatchup).map((matchup) => {
       const teams = matchup[0].teams;
       const team1 = teams[0];
       const team2 = teams[1];
@@ -93,7 +109,7 @@ export class YahooFantasyAPI {
     return matchups;
   }
 
-  async getStandings(): Promise<{ [key: string]: any }> {
+  async getStandings(): Promise<unknown> {
     const data = await this.makeRequest(`/league/${this.leagueId}/standings`);
     return data.fantasy_content.league[1].standings;
   }
