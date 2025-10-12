@@ -1,4 +1,4 @@
-import { Manager, Matchup, Standings, YahooLeagueData } from '@/types';
+import { Manager, Matchup, Standings } from '@/types';
 import { mockYahooData } from './yahoo-api';
 
 // Team assignments - you can modify these based on your league
@@ -13,8 +13,8 @@ export class DataManager {
   private managers: Manager[] = [];
   private matchups: Matchup[] = [];
   private standings: Standings = {
-    lily: { wins: 0, losses: 0, totalPoints: 0 },
-    teagan: { wins: 0, losses: 0, totalPoints: 0 },
+    lily: { wins: 6, losses: 8, totalPoints: 0 },
+    teagan: { wins: 8, losses: 6, totalPoints: 0 },
   };
 
   constructor() {

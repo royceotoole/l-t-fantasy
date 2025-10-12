@@ -13,7 +13,7 @@ export class YahooFantasyAPI {
     this.clientSecret = clientSecret;
   }
 
-  async getLeagueData(leagueId: string, season: string): Promise<any> {
+  async getLeagueData(leagueId: string): Promise<unknown> {
     try {
       const response = await axios.get(
         `${YAHOO_API_BASE}/league/${leagueId}/standings`,
@@ -31,7 +31,7 @@ export class YahooFantasyAPI {
     }
   }
 
-  async getMatchups(leagueId: string, week: number): Promise<any> {
+  async getMatchups(leagueId: string, week: number): Promise<unknown> {
     try {
       const response = await axios.get(
         `${YAHOO_API_BASE}/league/${leagueId}/scoreboard;week=${week}`,

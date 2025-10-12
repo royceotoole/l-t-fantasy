@@ -21,16 +21,19 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-100">
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-md mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl text-blue-900 font-light mb-2">
-            Lily and Teagan's
+          <h1 className="text-xl text-blue-900 font-normal mb-1">
+            Lily and Teagan&apos;s
           </h1>
-          <h2 className="text-4xl text-blue-900 font-bold">
+          <h2 className="text-5xl text-blue-900 font-bold mb-1 font-playfair">
             Fantasy League
           </h2>
+          <h3 className="text-xl text-blue-900 font-normal">
+            Fantasy League
+          </h3>
         </div>
       </div>
 

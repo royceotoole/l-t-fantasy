@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { dataManager } from '@/lib/data-manager';
-import { YahooFantasyAPI } from '@/lib/yahoo-api';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // This would normally fetch from Yahoo API
     // For now, we'll simulate score updates
@@ -31,6 +30,6 @@ export async function GET(request: NextRequest) {
 }
 
 // For Vercel Cron Jobs
-export async function POST(request: NextRequest) {
-  return GET(request);
+export async function POST() {
+  return GET();
 }

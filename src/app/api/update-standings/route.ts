@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { dataManager } from '@/lib/data-manager';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // This runs every Monday at 5 AM Central (10 AM UTC)
     const currentWeek = 2; // This would be calculated from current date
@@ -25,6 +25,6 @@ export async function GET(request: NextRequest) {
 }
 
 // For Vercel Cron Jobs
-export async function POST(request: NextRequest) {
-  return GET(request);
+export async function POST() {
+  return GET();
 }
