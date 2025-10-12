@@ -4,9 +4,9 @@
 const https = require('https');
 
 // Replace these with your actual values
-const CLIENT_ID = 'your_client_id_here';
-const CLIENT_SECRET = 'your_client_secret_here';
-const REDIRECT_URI = 'https://your-vercel-domain.vercel.app/api/auth/yahoo/callback';
+const CLIENT_ID = 'dj0yJmk9ZTQzSkFNWkpaNmQ1JmQ9WVdrOWNrd3pORlZPZWtzbWNHbzlNQT09JnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PWNi';
+const CLIENT_SECRET = 'c39d236629e7ac90c8cf4751354ac74b847eb57b';
+const REDIRECT_URI = 'https://l-t-fantasy.vercel.app/api/auth/yahoo/callback';
 
 // Step 1: Get authorization URL
 const authUrl = `https://api.login.yahoo.com/oauth2/request_auth?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=fspt-r`;
