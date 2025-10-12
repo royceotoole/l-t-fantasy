@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
-import Providers from "@/components/Providers";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,19 +12,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const playfairDisplay = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Lily and Teagan's Fantasy League",
-  description: "Track the epic battle between Team Lily and Team Teagan",
-};
-
-export const viewport = {
-  width: "device-width",
-  initialScale: 1,
+  title: "L-T Fantasy Hockey",
+  description: "Track the battle between Team Lily and Team Teagan in your Yahoo Fantasy Hockey league",
 };
 
 export default function RootLayout({
@@ -36,11 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning={true}
       >
-        <Providers>
-          {children}
-        </Providers>
+        {children}
       </body>
     </html>
   );

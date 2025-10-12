@@ -1,12 +1,12 @@
 {
   "crons": [
     {
-      "path": "/api/update-scores",
-      "schedule": "0 * * * *"
+      "path": "/api/cron/update-scores",
+      "schedule": "0 1,2 * * *"
     },
     {
-      "path": "/api/update-standings",
-      "schedule": "0 10 * * 1"
+      "path": "/api/cron/update-standings",
+      "schedule": "0 5 * * 1"
     }
   ]
 }

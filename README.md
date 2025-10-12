@@ -1,92 +1,83 @@
-# Lily and Teagan's Fantasy League
+# L-T Fantasy Hockey
 
-A mobile-first website that tracks the epic battle between Team Lily and Team Teagan in your Yahoo Fantasy Hockey league.
+A mobile-first website for tracking Yahoo Fantasy Hockey league matchups between Team Lily and Team Teagan.
 
 ## Features
 
-- **Real-time Standings**: Track wins/losses between Team Lily and Team Teagan
-- **Weekly Matchups**: View individual manager matchups with live scores
-- **Automated Updates**: 
-  - Hourly score updates (every hour on the hour)
-  - Weekly standings reset (Mondays at 5 AM Central)
-- **Mobile-First Design**: Optimized for mobile viewing
+- **Total Score Tracking**: Real-time tracking of wins and losses for each team
+- **Weekly Matchups**: Display of current week's individual manager matchups
+- **Team Management**: Easy assignment of managers to Team Lily or Team Teagan
+- **Automated Updates**: Hourly score updates and weekly standings resets
+- **Mobile-First Design**: Optimized for mobile devices with responsive design
+
+## How It Works
+
+1. **Team Assignment**: Each manager from your Yahoo Fantasy Hockey league is assigned to either Team Lily or Team Teagan
+2. **Scoring System**: When a manager wins a head-to-head matchup, their team gets 1 point
+3. **Automated Updates**: 
+   - Scores update every hour at 1:00 or 2:00 AM
+   - Standings reset every Monday at 5:00 AM Central Time
+4. **Real-time Display**: The website shows current standings and weekly matchups
 
 ## Setup Instructions
 
-### 1. Yahoo Fantasy Sports API Setup
+### 1. Environment Variables
 
-1. Go to [Yahoo Developer Network](https://developer.yahoo.com/api/)
+Create a `.env.local` file in the root directory with the following variables:
+
+```env
+# Yahoo Fantasy Sports API Configuration
+YAHOO_ACCESS_TOKEN=your_yahoo_access_token_here
+YAHOO_LEAGUE_ID=your_yahoo_league_id_here
+
+# Cron Job Security
+CRON_SECRET=your_secure_random_string_here
+```
+
+### 2. Yahoo Fantasy Sports API Setup
+
+1. Go to [Yahoo Developer Network](https://developer.yahoo.com/)
 2. Create a new application
-3. Note down your Client ID and Client Secret
-4. Get your league ID from your Yahoo Fantasy Hockey league URL
-5. Set up OAuth to get an access token
+3. Get your access token and league ID
+4. Add them to your environment variables
 
-### 2. Environment Variables
-
-Copy `env.example` to `.env.local` and fill in your credentials:
-
-```bash
-cp env.example .env.local
-```
-
-Update the following variables:
-- `YAHOO_CLIENT_ID`: Your Yahoo app client ID
-- `YAHOO_CLIENT_SECRET`: Your Yahoo app client secret
-- `YAHOO_ACCESS_TOKEN`: Your Yahoo API access token
-- `YAHOO_LEAGUE_ID`: Your fantasy league ID
-- `YAHOO_SEASON`: Current season (e.g., 2024)
-
-### 3. Team Assignments
-
-Update the team assignments in `src/lib/data-manager.ts`:
-
-```typescript
-const TEAM_ASSIGNMENTS: Record<string, 'lily' | 'teagan'> = {
-  'rice': 'lily',
-  'microsoft pp': 'lily',
-  'Myles': 'teagan',
-  'Scheif Happens': 'teagan',
-};
-```
-
-### 4. Local Development
+### 3. Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) to see your fantasy league tracker.
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-### 5. Deploy to Vercel
+### 4. Deployment on Vercel
 
 1. Push your code to GitHub
 2. Connect your GitHub repository to Vercel
 3. Add your environment variables in Vercel dashboard
 4. Deploy!
 
-The cron jobs will automatically start running:
-- Score updates: Every hour
-- Standings reset: Mondays at 5 AM Central (10 AM UTC)
+The cron jobs will automatically run on Vercel:
+- Hourly score updates at 1:00 and 2:00 AM
+- Weekly standings reset every Monday at 5:00 AM Central
 
-## How It Works
+## API Endpoints
 
-1. **Team Division**: Managers are divided into Team Lily and Team Teagan
-2. **Scoring**: Each head-to-head win gives the team 1 point
-3. **Updates**: 
-   - Hourly: Fetch latest scores from Yahoo API
-   - Weekly: Reset matchups and update standings
+- `GET /api/update-scores` - Get current scores and matchups
+- `POST /api/update-scores` - Manually update scores
+- `GET /api/update-standings` - Get current standings
+- `POST /api/update-standings` - Manually update standings
+- `GET /api/cron/update-scores` - Cron endpoint for hourly updates
+- `GET /api/cron/update-standings` - Cron endpoint for weekly updates
 
-## Customization
+## Technology Stack
 
-- Modify team assignments in `src/lib/data-manager.ts`
-- Adjust update schedules in `vercel.json`
-- Customize styling in the component files
-- Add more features like historical data or statistics
+- **Next.js 15** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **Yahoo Fantasy Sports API** - Data source
+- **Vercel** - Hosting and cron jobs
 
-## Troubleshooting
+## Contributing
 
-- Check Vercel function logs for cron job issues
-- Verify Yahoo API credentials are correct
-- Ensure league ID and season are accurate
-- Check that team names match exactly with Yahoo Fantasy
+Feel free to submit issues and enhancement requests!

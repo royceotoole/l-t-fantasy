@@ -2,9 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { YahooFantasyAPI, getMockData } from '@/lib/yahoo-api';
 import { DataManager } from '@/lib/data-manager';
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
+  // Verify this is a legitimate cron request (in production, you'd want to verify the cron secret)
+  const authHeader = request.headers.get('authorization');
+  const cronSecret = process.env.CRON_SECRET;
+  
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    // In production, you would get these from environment variables or request body
+    console.log('Starting hourly score update...');
+    
+    // In production, you would get these from environment variables
     const accessToken = process.env.YAHOO_ACCESS_TOKEN;
     const leagueId = process.env.YAHOO_LEAGUE_ID;
 
@@ -22,41 +32,27 @@ export async function POST(request: NextRequest) {
     const dataManager = new DataManager();
     dataManager.updateFromYahooData(yahooData);
 
+    console.log('Hourly score update completed successfully');
+
     return NextResponse.json({
       success: true,
       message: 'Scores updated successfully',
+      timestamp: new Date().toISOString(),
       data: {
         currentWeek: yahooData.currentWeek,
-        matchups: yahooData.matchups,
+        matchups: yahooData.matchups.length,
         teamScores: dataManager.calculateTeamScores(),
       },
     });
   } catch (error) {
-    console.error('Error updating scores:', error);
+    console.error('Error in hourly score update:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to update scores' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET() {
-  try {
-    const dataManager = new DataManager();
-    
-    return NextResponse.json({
-      success: true,
-      data: {
-        currentWeek: dataManager.getCurrentWeek(),
-        matchups: dataManager.getCurrentWeekMatchups(),
-        teamScores: dataManager.calculateTeamScores(),
-        weeklyStandings: dataManager.getWeeklyStandings(dataManager.getCurrentWeek()),
+      { 
+        success: false, 
+        message: 'Failed to update scores',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
       },
-    });
-  } catch (error) {
-    console.error('Error fetching scores:', error);
-    return NextResponse.json(
-      { success: false, message: 'Failed to fetch scores' },
       { status: 500 }
     );
   }
