@@ -5,7 +5,7 @@ import { useState } from 'react';
 export default function TestYahooPage() {
   const [accessToken, setAccessToken] = useState('');
   const [leagueId, setLeagueId] = useState('');
-  const [result, setResult] = useState<{ success: boolean; data?: any; error?: string } | null>(null);
+  const [result, setResult] = useState<{ success: boolean; data?: { leagueName: string; currentWeek: number; managersCount: number; matchupsCount: number; managers: Array<{ name: string; yahooTeamName: string }>; matchups: Array<{ manager1: string; manager2: string; manager1Score: number; manager2Score: number; isComplete: boolean }> }; error?: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const testConnection = async () => {
@@ -26,7 +26,7 @@ export default function TestYahooPage() {
 
       const data = await response.json();
       setResult(data);
-    } catch (_error) {
+    } catch {
       setResult({ success: false, error: 'Network error' });
     } finally {
       setLoading(false);
