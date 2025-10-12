@@ -11,10 +11,17 @@ export async function POST() {
     let yahooData;
 
     if (accessToken && leagueId) {
-      const yahooAPI = new YahooFantasyAPI(accessToken, leagueId);
-      yahooData = await yahooAPI.getLeagueInfo();
+      console.log('Using Yahoo API with league ID:', leagueId);
+      try {
+        const yahooAPI = new YahooFantasyAPI(accessToken, leagueId);
+        yahooData = await yahooAPI.getLeagueInfo();
+        console.log('Successfully fetched data from Yahoo API');
+      } catch (error) {
+        console.error('Yahoo API failed, falling back to mock data:', error);
+        yahooData = getMockData();
+      }
     } else {
-      // Use mock data for development
+      console.log('Using mock data - Yahoo API credentials not configured');
       yahooData = getMockData();
     }
 
