@@ -4,17 +4,22 @@ import { YahooLeagueData, Manager, Matchup } from '@/types';
 interface YahooTeam {
   team_id: string;
   name: string;
+  team_points: {
+    total: string;
+  };
 }
 
 interface YahooTeamData {
   [key: string]: [YahooTeam, unknown];
 }
 
+interface YahooMatchupData {
+  teams: [YahooTeam, YahooTeam];
+  status: string;
+}
+
 interface YahooMatchup {
-  [key: string]: [{
-    teams: [YahooTeam, YahooTeam];
-    status: string;
-  }, unknown];
+  [key: string]: [YahooMatchupData, unknown];
 }
 
 const YAHOO_BASE_URL = 'https://fantasysports.yahooapis.com/fantasy/v2';
@@ -83,24 +88,24 @@ export class YahooFantasyAPI {
       const team2 = teams[1];
 
       return {
-        id: `${week}-${team1[0].team_id}-${team2[0].team_id}`,
+        id: `${week}-${team1.team_id}-${team2.team_id}`,
         week,
         manager1: {
-          id: team1[0].team_id,
-          name: team1[0].name,
+          id: team1.team_id,
+          name: team1.name,
           team: 'lily' as const, // This will be assigned later
-          yahooTeamId: team1[0].team_id,
-          yahooTeamName: team1[0].name,
+          yahooTeamId: team1.team_id,
+          yahooTeamName: team1.name,
         },
         manager2: {
-          id: team2[0].team_id,
-          name: team2[0].name,
+          id: team2.team_id,
+          name: team2.name,
           team: 'teagan' as const, // This will be assigned later
-          yahooTeamId: team2[0].team_id,
-          yahooTeamName: team2[0].name,
+          yahooTeamId: team2.team_id,
+          yahooTeamName: team2.name,
         },
-        manager1Score: parseFloat(team1[0].team_points.total) || 0,
-        manager2Score: parseFloat(team2[0].team_points.total) || 0,
+        manager1Score: parseFloat(team1.team_points.total) || 0,
+        manager2Score: parseFloat(team2.team_points.total) || 0,
         isComplete: matchup[0].status === 'postevent',
         date: new Date().toISOString(),
       };
