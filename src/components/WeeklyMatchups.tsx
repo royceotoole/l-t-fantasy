@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Matchup, WeeklyStandings } from '@/types';
+import { useState } from 'react';
+import { WeeklyStandings } from '@/types';
 
 interface WeeklyMatchupsProps {
   weeklyStandings: WeeklyStandings | null;

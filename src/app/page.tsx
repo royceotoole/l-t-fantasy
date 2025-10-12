@@ -1,16 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import TotalScore from '@/components/TotalScore';
-import WeeklyMatchups from '@/components/WeeklyMatchups';
-import TeamManagement from '@/components/TeamManagement';
 import { TeamScore, WeeklyStandings, Manager } from '@/types';
 
 export default function Home() {
   const [teamScores, setTeamScores] = useState<{ lily: TeamScore; teagan: TeamScore } | null>(null);
   const [weeklyStandings, setWeeklyStandings] = useState<WeeklyStandings | null>(null);
-  const [managers, setManagers] = useState<Manager[]>([]);
-  const [currentWeek, setCurrentWeek] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = async () => {
@@ -23,13 +18,11 @@ export default function Home() {
       if (scoresResponse.ok) {
         const scoresData = await scoresResponse.json();
         setTeamScores(scoresData.data.teamScores);
-        setCurrentWeek(scoresData.data.currentWeek);
       }
 
       if (standingsResponse.ok) {
         const standingsData = await standingsResponse.json();
         setWeeklyStandings(standingsData.data.weeklyStandings);
-        setManagers(standingsData.data.allMatchups?.map((m: any) => [m.manager1, m.manager2]).flat() || []);
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -42,9 +35,6 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const handleManagerUpdate = () => {
-    fetchData();
-  };
 
   if (isLoading) {
     return (
@@ -72,7 +62,7 @@ export default function Home() {
                 lineHeight: '1.2'
               }}
             >
-              Lily and Teagan's
+              Lily and Teagan&apos;s
             </div>
             <h1 
               className="mb-2" 

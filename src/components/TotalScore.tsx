@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { TeamScore } from '@/types';
 
 interface TotalScoreProps {
@@ -38,7 +38,7 @@ export default function TotalScore({ teamScores }: TotalScoreProps) {
             {isLoading ? 'Updating...' : 'Refresh'}
           </button>
         </div>
-        <div className="text-center text-gray-500">Loading scores...</div>
+        <div className="text-center text-gray-500">Loading scores&hellip;</div>
       </div>
     );
   }

@@ -48,8 +48,8 @@ export class DataManager {
     return this.matchups.reduce((wins, matchup) => {
       if (!matchup.isComplete) return wins;
       
-      const teamManager = matchup.manager1.team === team ? matchup.manager1 : matchup.manager2;
-      const opponentManager = matchup.manager1.team === team ? matchup.manager2 : matchup.manager1;
+      // const teamManager = matchup.manager1.team === team ? matchup.manager1 : matchup.manager2;
+      // const opponentManager = matchup.manager1.team === team ? matchup.manager2 : matchup.manager1;
       
       const teamScore = matchup.manager1.team === team ? matchup.manager1Score : matchup.manager2Score;
       const opponentScore = matchup.manager1.team === team ? matchup.manager2Score : matchup.manager1Score;
@@ -64,7 +64,7 @@ export class DataManager {
     const lilyWins = weekMatchups.reduce((wins, matchup) => {
       if (!matchup.isComplete) return wins;
       
-      const lilyManager = matchup.manager1.team === 'lily' ? matchup.manager1 : matchup.manager2;
+      // const lilyManager = matchup.manager1.team === 'lily' ? matchup.manager1 : matchup.manager2;
       const lilyScore = matchup.manager1.team === 'lily' ? matchup.manager1Score : matchup.manager2Score;
       const opponentScore = matchup.manager1.team === 'lily' ? matchup.manager2Score : matchup.manager1Score;
       
