@@ -44,7 +44,7 @@ export class YahooFantasyAPI {
     const data = await this.makeRequest(`/league/${this.leagueId}/teams`);
     const teams = data.fantasy_content.league[1].teams;
     
-    return Object.values(teams).map((team: any) => ({
+    return Object.values(teams).map((team: { [key: string]: any }) => ({
       id: team[0].team_id,
       name: team[0].name,
       team: 'lily' as const, // This will be assigned later
@@ -61,7 +61,7 @@ export class YahooFantasyAPI {
       return [];
     }
 
-    const matchups = Object.values(scoreboard.matchups).map((matchup: any) => {
+    const matchups = Object.values(scoreboard.matchups).map((matchup: { [key: string]: any }) => {
       const teams = matchup[0].teams;
       const team1 = teams[0];
       const team2 = teams[1];
@@ -93,7 +93,7 @@ export class YahooFantasyAPI {
     return matchups;
   }
 
-  async getStandings(): Promise<any> {
+  async getStandings(): Promise<{ [key: string]: any }> {
     const data = await this.makeRequest(`/league/${this.leagueId}/standings`);
     return data.fantasy_content.league[1].standings;
   }

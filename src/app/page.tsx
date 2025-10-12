@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TeamScore, WeeklyStandings, Manager } from '@/types';
+import { TeamScore, WeeklyStandings } from '@/types';
 
 export default function Home() {
   const [teamScores, setTeamScores] = useState<{ lily: TeamScore; teagan: TeamScore } | null>(null);

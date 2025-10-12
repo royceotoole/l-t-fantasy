@@ -35,7 +35,7 @@ export default function TotalScore({ teamScores }: TotalScoreProps) {
             disabled={isLoading}
             className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
-            {isLoading ? 'Updating...' : 'Refresh'}
+            {isLoading ? 'Updating&hellip;' : 'Refresh'}
           </button>
         </div>
         <div className="text-center text-gray-500">Loading scores&hellip;</div>

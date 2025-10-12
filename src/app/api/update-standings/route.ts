@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { YahooFantasyAPI, getMockData } from '@/lib/yahoo-api';
 import { DataManager } from '@/lib/data-manager';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // In production, you would get these from environment variables
     const accessToken = process.env.YAHOO_ACCESS_TOKEN;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import TeamManagement from '@/components/TeamManagement';
 import { Manager } from '@/types';
 
@@ -13,7 +14,7 @@ export default function AdminPage() {
       const response = await fetch('/api/update-standings');
       if (response.ok) {
         const data = await response.json();
-        setManagers(data.data.allMatchups?.map((m: any) => [m.manager1, m.manager2]).flat() || []);
+        setManagers(data.data.allMatchups?.map((m: { manager1: Manager; manager2: Manager }) => [m.manager1, m.manager2]).flat() || []);
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -58,12 +59,12 @@ export default function AdminPage() {
         <TeamManagement managers={managers} onManagerUpdate={handleManagerUpdate} />
         
         <div className="mt-8 text-center">
-          <a 
+          <Link 
             href="/" 
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
             Back to Main Page
-          </a>
+          </Link>
         </div>
       </main>
     </div>
