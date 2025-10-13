@@ -3,12 +3,20 @@
 import { useState, useEffect } from 'react';
 import { TeamScore } from '@/lib/lily-teagan-scoring';
 import type { WeeklyScore, MatchupResult } from '@/lib/lily-teagan-scoring';
+import { MANAGER_ASSIGNMENTS } from '@/lib/manager-assignments';
 
 export default function Home() {
   const [teamScores, setTeamScores] = useState<{ lily: TeamScore; teagan: TeamScore } | null>(null);
   const [weeklyScores, setWeeklyScores] = useState<WeeklyScore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Helper function to get manager name from Yahoo team ID
+  const getManagerName = (yahooTeamId: string): string => {
+    const allManagers = [...MANAGER_ASSIGNMENTS.lily, ...MANAGER_ASSIGNMENTS.teagan];
+    const manager = allManagers.find(m => m.yahooTeamId === yahooTeamId);
+    return manager?.name || 'Unknown';
+  };
 
   const fetchData = async () => {
     try {
@@ -210,69 +218,163 @@ export default function Home() {
               </span>
             </div>
             {weeklyScores.length > 0 && weeklyScores[0]?.matchups.length > 0 ? (
-              weeklyScores[0].matchups.map((matchup: MatchupResult, index: number) => {
-                // Determine which manager is on which team
-                const isLilyVsTeagan = 
+              weeklyScores[0].matchups
+                .filter((matchup: MatchupResult) => 
+                  // Only show matchups where one team is Lily and one is Teagan
                   (matchup.manager1.team === 'lily' && matchup.manager2.team === 'teagan') ||
-                  (matchup.manager1.team === 'teagan' && matchup.manager2.team === 'lily');
-
-                let leftManager, rightManager, leftScore, rightScore, leftWon;
-
-                if (isLilyVsTeagan) {
+                  (matchup.manager1.team === 'teagan' && matchup.manager2.team === 'lily')
+                )
+                .map((matchup: MatchupResult, index: number) => {
                   // Lily vs Teagan matchup - show Lily on left, Teagan on right
-                  leftManager = matchup.manager1.team === 'lily' ? matchup.manager1 : matchup.manager2;
-                  rightManager = matchup.manager1.team === 'lily' ? matchup.manager2 : matchup.manager1;
-                  leftScore = leftManager.points;
-                  rightScore = rightManager.points;
-                  leftWon = matchup.winner === 'lily';
-                } else {
-                  // Same-team matchup - just show as is
-                  leftManager = matchup.manager1;
-                  rightManager = matchup.manager2;
-                  leftScore = matchup.manager1.points;
-                  rightScore = matchup.manager2.points;
-                  leftWon = leftScore > rightScore;
-                }
+                  const lilyManager = matchup.manager1.team === 'lily' ? matchup.manager1 : matchup.manager2;
+                  const teaganManager = matchup.manager1.team === 'lily' ? matchup.manager2 : matchup.manager1;
+                  const lilyScore = lilyManager.points;
+                  const teaganScore = teaganManager.points;
+                  const lilyWon = lilyScore > teaganScore;
+                  const teaganWon = teaganScore > lilyScore;
+                  const lilyManagerName = getManagerName(lilyManager.yahooTeamId);
+                  const teaganManagerName = getManagerName(teaganManager.yahooTeamId);
 
-                return (
-                  <div key={`${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
-                    <span 
-                      className="truncate flex-1 text-left"
-                      style={{ 
-                        color: '#027FCD', 
-                        fontFamily: 'Unica Regular', 
-                        fontSize: '15px',
-                        minWidth: 0
-                      }}
-                      title={leftManager.name}
-                    >
-                      {leftManager.name}
-                    </span>
-                    <span 
-                      className="whitespace-nowrap flex-shrink-0"
-                      style={{ 
-                        color: '#027FCD', 
-                        fontFamily: leftWon ? 'Unica Bold' : 'Unica Regular', 
-                        fontSize: '15px'
-                      }}
-                    >
-                      {Math.round(leftScore)} - {Math.round(rightScore)}
-                    </span>
-                    <span 
-                      className="truncate flex-1 text-right"
-                      style={{ 
-                        color: '#027FCD', 
-                        fontFamily: 'Unica Regular', 
-                        fontSize: '15px',
-                        minWidth: 0
-                      }}
-                      title={rightManager.name}
-                    >
-                      {rightManager.name}
-                    </span>
-                  </div>
-                );
-              })
+                  return (
+                    <div key={`${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                      <span 
+                        className="truncate flex-1 text-left"
+                        style={{ 
+                          color: '#027FCD', 
+                          fontFamily: 'Unica Regular', 
+                          fontSize: '15px',
+                          minWidth: 0
+                        }}
+                        title={lilyManagerName}
+                      >
+                        {lilyManagerName}
+                      </span>
+                      <span 
+                        className="whitespace-nowrap flex-shrink-0"
+                        style={{ 
+                          color: '#027FCD', 
+                          fontSize: '15px'
+                        }}
+                      >
+                        <span style={{ fontFamily: lilyWon ? 'Unica Bold' : 'Unica Regular' }}>
+                          {Math.round(lilyScore)}
+                        </span>
+                        {' - '}
+                        <span style={{ fontFamily: teaganWon ? 'Unica Bold' : 'Unica Regular' }}>
+                          {Math.round(teaganScore)}
+                        </span>
+                      </span>
+                      <span 
+                        className="truncate flex-1 text-right"
+                        style={{ 
+                          color: '#027FCD', 
+                          fontFamily: 'Unica Regular', 
+                          fontSize: '15px',
+                          minWidth: 0
+                        }}
+                        title={teaganManagerName}
+                      >
+                        {teaganManagerName}
+                      </span>
+                    </div>
+                  );
+                })
+                .concat(
+                  // Add same-team matchups with "no opponent"
+                  weeklyScores[0].matchups
+                    .filter((matchup: MatchupResult) => 
+                      (matchup.manager1.team === matchup.manager2.team)
+                    )
+                    .map((matchup: MatchupResult, index: number) => {
+                      const team = matchup.manager1.team;
+                      const manager1Score = matchup.manager1.points;
+                      const manager2Score = matchup.manager2.points;
+                      const manager1Name = getManagerName(matchup.manager1.yahooTeamId);
+                      const manager2Name = getManagerName(matchup.manager2.yahooTeamId);
+
+                      if (team === 'lily') {
+                        // Show manager1 on left side, manager2 on right as "no opponent"
+                        return (
+                          <div key={`same-${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                            <span 
+                              className="truncate flex-1 text-left"
+                              style={{ 
+                                color: '#027FCD', 
+                                fontFamily: 'Unica Regular', 
+                                fontSize: '15px',
+                                minWidth: 0
+                              }}
+                              title={manager1Name}
+                            >
+                              {manager1Name}
+                            </span>
+                            <span 
+                              className="whitespace-nowrap flex-shrink-0"
+                              style={{ 
+                                color: '#027FCD', 
+                                fontSize: '15px',
+                                fontFamily: 'Unica Regular'
+                              }}
+                            >
+                              {Math.round(manager1Score)} - -
+                            </span>
+                            <span 
+                              className="truncate flex-1 text-right"
+                              style={{ 
+                                color: '#027FCD', 
+                                opacity: 0.6,
+                                fontFamily: 'Unica Regular', 
+                                fontSize: '15px',
+                                minWidth: 0
+                              }}
+                            >
+                              no opponent
+                            </span>
+                          </div>
+                        );
+                      } else {
+                        // team === 'teagan', show manager1 on right side, manager2 on left as "no opponent"
+                        return (
+                          <div key={`same-${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                            <span 
+                              className="truncate flex-1 text-left"
+                              style={{ 
+                                color: '#027FCD', 
+                                opacity: 0.6,
+                                fontFamily: 'Unica Regular', 
+                                fontSize: '15px',
+                                minWidth: 0
+                              }}
+                            >
+                              no opponent
+                            </span>
+                            <span 
+                              className="whitespace-nowrap flex-shrink-0"
+                              style={{ 
+                                color: '#027FCD', 
+                                fontSize: '15px',
+                                fontFamily: 'Unica Regular'
+                              }}
+                            >
+                              - - {Math.round(manager1Score)}
+                            </span>
+                            <span 
+                              className="truncate flex-1 text-right"
+                              style={{ 
+                                color: '#027FCD', 
+                                fontFamily: 'Unica Regular', 
+                                fontSize: '15px',
+                                minWidth: 0
+                              }}
+                              title={manager1Name}
+                            >
+                              {manager1Name}
+                            </span>
+                          </div>
+                        );
+                      }
+                    })
+                )
             ) : (
               <div className="px-4 py-8 text-center" style={{ color: '#999', fontSize: '12px' }}>
                 No matchups available
