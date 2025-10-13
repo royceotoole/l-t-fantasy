@@ -64,21 +64,33 @@ export async function GET() {
         const matchupWrapper = matchupsObj[key];
         if (!matchupWrapper?.matchup) continue;
 
+        // matchup is an object, access the first element (key "0")
         const yahooMatchup = matchupWrapper.matchup[0];
-        console.log('Processing matchup:', yahooMatchup);
+        console.log('Processing matchup:', JSON.stringify(yahooMatchup, null, 2));
 
         // Extract team data from the complex nested structure
-        const teamsObj = yahooMatchup.teams;
+        const teamsObj = yahooMatchup[0]?.teams;
+        if (!teamsObj) {
+          console.log('No teams object found');
+          continue;
+        }
+
         const team1Wrapper = teamsObj['0']?.team;
         const team2Wrapper = teamsObj['1']?.team;
 
-        if (!team1Wrapper || !team2Wrapper) continue;
+        if (!team1Wrapper || !team2Wrapper) {
+          console.log('Missing team wrappers');
+          continue;
+        }
 
         // Team data is in array format: team[0] has metadata, team[1] has stats
-        const team1Data = team1Wrapper[0];
-        const team2Data = team2Wrapper[0];
+        const team1Data = team1Wrapper[0][0];
+        const team2Data = team2Wrapper[0][0];
 
-        if (!team1Data || !team2Data) continue;
+        if (!team1Data || !team2Data) {
+          console.log('Missing team data');
+          continue;
+        }
 
         const matchupResult = calculateMatchupWinner({
           teams: [
