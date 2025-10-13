@@ -165,7 +165,7 @@ export class YahooFantasyAPI {
   }
 
   async getStandings(): Promise<unknown> {
-    const data = await this.makeRequest(`/league/${this.leagueId}/standings`);
+    const data = await this.makeRequest(`/league/${this.leagueId}/standings`) as any;
     return data.fantasy_content.league[1].standings;
   }
 }
