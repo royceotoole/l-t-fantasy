@@ -49,7 +49,9 @@ export class YahooFantasyAPI {
   }
 
   async getLeagueInfo(): Promise<YahooLeagueData> {
-    const data = await this.makeRequest(`/league/${this.leagueId}`);
+    // Use game key 422 for 2024-25 Hockey leagues (league 37256)
+    const gameKey = this.leagueId === '37256' ? '422' : '414';
+    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}`);
     const league = data.fantasy_content.league[0];
     
     return {
