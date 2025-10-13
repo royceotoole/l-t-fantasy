@@ -6,7 +6,7 @@ export default function TestYahooPage() {
   const [accessToken, setAccessToken] = useState('');
   const [leagueId, setLeagueId] = useState('');
   const [result, setResult] = useState<{ success: boolean; data?: { leagueName: string; currentWeek: number; managersCount: number; matchupsCount: number; managers: Array<{ name: string; yahooTeamName: string }>; matchups: Array<{ manager1: string; manager2: string; manager1Score: number; manager2Score: number; isComplete: boolean }> }; error?: string } | null>(null);
-  const [debugResult, setDebugResult] = useState<{ success: boolean; data?: any; error?: string; statusCode?: number } | null>(null);
+  const [debugResult, setDebugResult] = useState<{ success: boolean; data?: unknown; error?: string; statusCode?: number } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const testConnection = async () => {

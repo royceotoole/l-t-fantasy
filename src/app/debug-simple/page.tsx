@@ -5,7 +5,7 @@ import { useState } from 'react';
 export default function DebugSimplePage() {
   const [accessToken, setAccessToken] = useState('');
   const [leagueId, setLeagueId] = useState('37256');
-  const [result, setResult] = useState<{ success: boolean; data?: any; error?: string; statusCode?: number } | null>(null);
+  const [result, setResult] = useState<{ success: boolean; data?: unknown; error?: string; statusCode?: number } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const debugConnection = async () => {
@@ -26,7 +26,7 @@ export default function DebugSimplePage() {
 
       const data = await response.json();
       setResult(data);
-    } catch (error) {
+    } catch {
       setResult({ success: false, error: 'Network error' });
     } finally {
       setLoading(false);
@@ -91,9 +91,9 @@ export default function DebugSimplePage() {
           <h3 className="text-lg font-semibold text-blue-800 mb-4">Instructions:</h3>
           <ol className="list-decimal list-inside space-y-2 text-blue-700">
             <li>Paste your Yahoo Access Token above</li>
-            <li>Click "Debug Raw Response"</li>
+            <li>Click &quot;Debug Raw Response&quot;</li>
             <li>Copy the entire JSON response and share it with me</li>
-            <li>This will help me fix the "Cannot read properties of undefined (reading 'league')" error</li>
+            <li>This will help me fix the &quot;Cannot read properties of undefined (reading &apos;league&apos;)&quot; error</li>
           </ol>
         </div>
       </div>

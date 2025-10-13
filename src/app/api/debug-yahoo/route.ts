@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as any).response : null;
+    const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as { response?: { data?: unknown; status?: number } }).response : null;
     console.error('Yahoo API debug failed:', errorResponse?.data || errorMessage);
     return NextResponse.json({
       success: false,
