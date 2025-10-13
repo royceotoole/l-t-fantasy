@@ -236,7 +236,7 @@ export default function Home() {
                   const teaganManagerName = getManagerName(teaganManager.yahooTeamId);
 
                   return (
-                    <div key={`${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                    <div key={`${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
                       <span 
                         className="truncate flex-1 text-left"
                         style={{ 
@@ -296,7 +296,7 @@ export default function Home() {
                         // Show BOTH Lily managers faded (one on left, one on right)
                         return [
                           // Manager 1 on left, Manager 2 on right (both faded)
-                          <div key={`same-${matchup.week}-${index}-m1`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                          <div key={`same-${matchup.week}-${index}-m1`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
                             <span 
                               className="truncate flex-1 text-left"
                               style={{ 
@@ -339,7 +339,7 @@ export default function Home() {
                         // team === 'teagan', show BOTH Teagan managers faded (one on left, one on right)
                         return [
                           // Manager 1 on left, Manager 2 on right (both faded)
-                          <div key={`same-${matchup.week}-${index}-m1`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                          <div key={`same-${matchup.week}-${index}-m1`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
                             <span 
                               className="truncate flex-1 text-left"
                               style={{ 
