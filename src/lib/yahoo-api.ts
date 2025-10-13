@@ -62,7 +62,9 @@ export class YahooFantasyAPI {
   }
 
   async getManagers(): Promise<Manager[]> {
-    const data = await this.makeRequest(`/league/${this.leagueId}/teams`);
+    // Use game key 422 for 2024-25 Hockey leagues (league 37256)
+    const gameKey = this.leagueId === '37256' ? '422' : '414';
+    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/teams`);
     const teams = data.fantasy_content.league[1].teams;
     
     return Object.values(teams as YahooTeamData).map((team) => ({
@@ -75,7 +77,9 @@ export class YahooFantasyAPI {
   }
 
   async getCurrentWeekMatchups(week: number): Promise<Matchup[]> {
-    const data = await this.makeRequest(`/league/${this.leagueId}/scoreboard;week=${week}`);
+    // Use game key 422 for 2024-25 Hockey leagues (league 37256)
+    const gameKey = this.leagueId === '37256' ? '422' : '414';
+    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/scoreboard;week=${week}`);
     const scoreboard = data.fantasy_content.league[1].scoreboard;
     
     if (!scoreboard || !scoreboard.matchups) {
