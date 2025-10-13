@@ -23,10 +23,10 @@ export interface MatchupResult {
 export interface TeamScore {
   team: Team;
   totalWins: number;
-  managers: Array<{
-    yahooTeamId: string;
-    name: string;
-    yahooTeamName: string;
+  managers: ReadonlyArray<{
+    readonly yahooTeamId: string;
+    readonly name: string;
+    readonly yahooTeamName: string;
   }>;
 }
 
