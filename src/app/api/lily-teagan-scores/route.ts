@@ -32,12 +32,52 @@ export async function GET() {
   try {
     const leagueKey = await ensureNhlLeagueKey();
 
-    // Fetch scoreboard for all weeks (to get full season records)
-    // Yahoo API format: /scoreboard;weeks=1,2,3 or just /scoreboard for current week
+    // Fetch standings to get official W-L-T records from Yahoo
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const scoreboardData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard;weeks=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26`) as any;
+    const standingsData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/standings`) as any;
+    
+    // Fetch current week scoreboard for matchup display
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const scoreboardData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard`) as any;
 
+    console.log('Standings data received:', JSON.stringify(standingsData, null, 2));
     console.log('Scoreboard data received:', JSON.stringify(scoreboardData, null, 2));
+
+    // Parse standings to get official Yahoo records for each team
+    const standingsLeagueArray = standingsData.fantasy_content.league;
+    const standingsTeamsWrapper = standingsLeagueArray[1];
+    const standingsTeamsObj = standingsTeamsWrapper?.standings?.[0]?.teams;
+    
+    const officialRecords: Record<string, { wins: number; losses: number; ties: number }> = {};
+    
+    if (standingsTeamsObj) {
+      // Teams are in an object with numeric keys
+      for (const key in standingsTeamsObj) {
+        if (key === 'count') continue;
+        
+        const teamWrapper = standingsTeamsObj[key];
+        const teamArray = teamWrapper?.team;
+        
+        if (!teamArray || !Array.isArray(teamArray)) continue;
+        
+        // teamArray[0] is metadata array, teamArray[1] is standings stats
+        const teamMetadata = teamArray[0];
+        const teamStats = teamArray[1];
+        
+        const teamId = teamMetadata?.find((item: { team_id?: string }) => item.team_id)?.team_id;
+        const outcomeTotals = teamStats?.team_standings?.outcome_totals;
+        
+        if (teamId && outcomeTotals) {
+          officialRecords[teamId] = {
+            wins: parseInt(outcomeTotals.wins || '0'),
+            losses: parseInt(outcomeTotals.losses || '0'),
+            ties: parseInt(outcomeTotals.ties || '0'),
+          };
+        }
+      }
+    }
+    
+    console.log('Official records from Yahoo:', officialRecords);
 
     const leagueArray = scoreboardData.fantasy_content.league;
     const leagueInfo = leagueArray[0];
@@ -55,19 +95,13 @@ export async function GET() {
     const allMatchups: MatchupResult[] = [];
     const matchupsByWeek: Record<number, MatchupResult[]> = {};
 
-    // Process matchups from all weeks
-    // When requesting multiple weeks, scoreboardObj is an array of scoreboard objects
-    if (scoreboardObj) {
-      const scoreboards = Array.isArray(scoreboardObj) ? scoreboardObj : [scoreboardObj];
-      
-      for (const scoreboard of scoreboards) {
-        if (!scoreboard[0]?.matchups) continue;
-        
-        const matchupsObj = scoreboard[0].matchups;
-        const week = parseInt(scoreboard[0].week || currentWeek.toString());
+    // Process current week matchups
+    if (scoreboardObj && scoreboardObj[0]?.matchups) {
+      const matchupsObj = scoreboardObj[0].matchups;
+      const week = parseInt(scoreboardObj[0].week || currentWeek.toString());
 
-        console.log(`Processing week ${week} - Matchups object keys:`, Object.keys(matchupsObj));
-        console.log(`Week ${week} matchups:`, JSON.stringify(matchupsObj, null, 2));
+      console.log('Matchups object keys:', Object.keys(matchupsObj));
+      console.log('Matchups object:', JSON.stringify(matchupsObj, null, 2));
 
       // Yahoo API returns matchups as an object with numeric keys
       for (const key in matchupsObj) {
@@ -159,7 +193,6 @@ export async function GET() {
         }
       }
     }
-    }
 
     console.log('All matchups:', allMatchups);
     console.log('Matchups by week:', matchupsByWeek);
@@ -167,7 +200,15 @@ export async function GET() {
       // Calculate scores
       const totalScores = calculateTotalScores(allMatchups);
       const weeklyScores = calculateWeeklyScores(matchupsByWeek);
-      const managerRecords = calculateManagerRecords(allMatchups);
+      
+      // Use official Yahoo records instead of calculating them
+      const managerRecords: Record<string, { yahooTeamId: string; wins: number; losses: number; ties: number }> = {};
+      for (const teamId in officialRecords) {
+        managerRecords[teamId] = {
+          yahooTeamId: teamId,
+          ...officialRecords[teamId],
+        };
+      }
 
       return NextResponse.json({
         success: true,
