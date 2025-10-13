@@ -63,25 +63,26 @@ export async function GET() {
         if (key === 'count') continue;
 
         const matchupWrapper = matchupsObj[key];
-        console.log(`Processing matchup key: ${key}`, matchupWrapper);
+        console.log(`Processing matchup key: ${key}`);
         
         if (!matchupWrapper?.matchup) {
           console.log('No matchup property found');
           continue;
         }
 
-        // matchup is an object with key "0" containing the actual matchup data
-        const matchupData = matchupWrapper.matchup[0];
-        console.log('Matchup data:', matchupData);
+        // matchup is an object with key "0" containing an array
+        const matchupArray = matchupWrapper.matchup[0];
+        console.log('Matchup array:', matchupArray);
         
-        if (!matchupData || !matchupData[0]) {
-          console.log('No matchup data at [0]');
+        if (!matchupArray) {
+          console.log('No matchup array');
           continue;
         }
 
         // Extract team data from the complex nested structure
-        const teamsObj = matchupData[0].teams;
-        console.log('Teams object:', teamsObj);
+        // matchupArray[0] contains teams object
+        const teamsObj = matchupArray.teams;
+        console.log('Teams object found:', !!teamsObj);
         
         if (!teamsObj) {
           console.log('No teams object found');
@@ -90,9 +91,6 @@ export async function GET() {
 
         const team1Wrapper = teamsObj['0']?.team;
         const team2Wrapper = teamsObj['1']?.team;
-
-        console.log('Team 1 wrapper:', team1Wrapper);
-        console.log('Team 2 wrapper:', team2Wrapper);
 
         if (!team1Wrapper || !team2Wrapper) {
           console.log('Missing team wrappers');
@@ -109,22 +107,30 @@ export async function GET() {
         const team2Id = team2MetadataArray.find((item: { team_id?: string }) => item.team_id)?.team_id;
         const team2Name = team2MetadataArray.find((item: { name?: string }) => item.name)?.name;
 
+        console.log('Team IDs:', team1Id, team2Id);
+        console.log('Team names:', team1Name, team2Name);
+
         if (!team1Id || !team2Id) {
           console.log('Missing team IDs');
           continue;
         }
+
+        const team1Points = team1Wrapper[1]?.team_points?.total || '0';
+        const team2Points = team2Wrapper[1]?.team_points?.total || '0';
+        
+        console.log('Team points:', team1Points, team2Points);
 
         const matchupResult = calculateMatchupWinner({
           teams: [
             {
               team_id: team1Id,
               name: team1Name || '',
-              team_points: { total: team1Wrapper[1]?.team_points?.total || '0' },
+              team_points: { total: team1Points },
             },
             {
               team_id: team2Id,
               name: team2Name || '',
-              team_points: { total: team2Wrapper[1]?.team_points?.total || '0' },
+              team_points: { total: team2Points },
             },
           ],
         });
