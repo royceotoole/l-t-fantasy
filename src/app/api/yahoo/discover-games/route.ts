@@ -19,10 +19,18 @@ export async function GET() {
   try {
     const data = await yahooFetch('/fantasy/v2/users;use_login=1/games');
 
+    // Debug: log the full response
+    console.log('Raw Yahoo API response:', JSON.stringify(data, null, 2));
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const gamesData = data as any;
     const user = gamesData?.fantasy_content?.users?.[0]?.user;
+    
+    console.log('User object:', JSON.stringify(user, null, 2));
+    
     const gameArr = (user?.[1]?.games?.[0]?.game || []) as YahooGame[];
+    
+    console.log('Game array:', JSON.stringify(gameArr, null, 2));
 
     const games = gameArr.map((g) => ({
       game_key: g.game?.[0]?.game_key || '',
@@ -36,6 +44,11 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       games,
+      debug: {
+        hasData: !!data,
+        hasUser: !!user,
+        gameArrLength: gameArr.length,
+      }
     });
   } catch (error) {
     console.error('Error discovering games:', error);
