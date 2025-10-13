@@ -55,21 +55,34 @@ export async function GET() {
       const matchupsObj = scoreboardObj[0].matchups;
       const week = parseInt(scoreboardObj[0].week || currentWeek.toString());
 
-      console.log('Matchups object:', matchupsObj);
+      console.log('Matchups object keys:', Object.keys(matchupsObj));
+      console.log('Matchups object:', JSON.stringify(matchupsObj, null, 2));
 
       // Yahoo API returns matchups as an object with numeric keys
       for (const key in matchupsObj) {
         if (key === 'count') continue;
 
         const matchupWrapper = matchupsObj[key];
-        if (!matchupWrapper?.matchup) continue;
+        console.log(`Processing matchup key: ${key}`, matchupWrapper);
+        
+        if (!matchupWrapper?.matchup) {
+          console.log('No matchup property found');
+          continue;
+        }
 
-        // matchup is an object, access the first element (key "0")
-        const yahooMatchup = matchupWrapper.matchup[0];
-        console.log('Processing matchup:', JSON.stringify(yahooMatchup, null, 2));
+        // matchup is an object with key "0" containing the actual matchup data
+        const matchupData = matchupWrapper.matchup[0];
+        console.log('Matchup data:', matchupData);
+        
+        if (!matchupData || !matchupData[0]) {
+          console.log('No matchup data at [0]');
+          continue;
+        }
 
         // Extract team data from the complex nested structure
-        const teamsObj = yahooMatchup[0]?.teams;
+        const teamsObj = matchupData[0].teams;
+        console.log('Teams object:', teamsObj);
+        
         if (!teamsObj) {
           console.log('No teams object found');
           continue;
@@ -78,30 +91,39 @@ export async function GET() {
         const team1Wrapper = teamsObj['0']?.team;
         const team2Wrapper = teamsObj['1']?.team;
 
+        console.log('Team 1 wrapper:', team1Wrapper);
+        console.log('Team 2 wrapper:', team2Wrapper);
+
         if (!team1Wrapper || !team2Wrapper) {
           console.log('Missing team wrappers');
           continue;
         }
 
-        // Team data is in array format: team[0] has metadata, team[1] has stats
-        const team1Data = team1Wrapper[0][0];
-        const team2Data = team2Wrapper[0][0];
+        // Team wrapper is an array: [0] contains metadata array, [1] contains stats
+        const team1MetadataArray = team1Wrapper[0];
+        const team2MetadataArray = team2Wrapper[0];
+        
+        // Find the team_id and name in the metadata array
+        const team1Id = team1MetadataArray.find((item: { team_id?: string }) => item.team_id)?.team_id;
+        const team1Name = team1MetadataArray.find((item: { name?: string }) => item.name)?.name;
+        const team2Id = team2MetadataArray.find((item: { team_id?: string }) => item.team_id)?.team_id;
+        const team2Name = team2MetadataArray.find((item: { name?: string }) => item.name)?.name;
 
-        if (!team1Data || !team2Data) {
-          console.log('Missing team data');
+        if (!team1Id || !team2Id) {
+          console.log('Missing team IDs');
           continue;
         }
 
         const matchupResult = calculateMatchupWinner({
           teams: [
             {
-              team_id: team1Data.team_id || '',
-              name: team1Data.name || '',
+              team_id: team1Id,
+              name: team1Name || '',
               team_points: { total: team1Wrapper[1]?.team_points?.total || '0' },
             },
             {
-              team_id: team2Data.team_id || '',
-              name: team2Data.name || '',
+              team_id: team2Id,
+              name: team2Name || '',
               team_points: { total: team2Wrapper[1]?.team_points?.total || '0' },
             },
           ],
