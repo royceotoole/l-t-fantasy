@@ -31,22 +31,15 @@ export async function GET(req: NextRequest) {
       `/fantasy/v2/users;use_login=1/games;game_keys=${gameKey}/leagues`
     );
 
-    // Debug: log the full response
-    console.log('Raw Yahoo leagues response:', JSON.stringify(data, null, 2));
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const leaguesData = data as any;
     const user = leaguesData?.fantasy_content?.users?.[0]?.user;
-    
-    console.log('User in leagues:', JSON.stringify(user, null, 2));
-    
     const game = user?.[1]?.games?.[0]?.game;
     
-    console.log('Game in leagues:', JSON.stringify(game, null, 2));
+    // game is an array: [0] = game info, [1] = leagues object
+    const leaguesObj = game?.[1]?.leagues;
     
-    // Check if leagues exist
-    if (!game?.[1]?.leagues) {
-      console.log('No leagues found at game[1].leagues');
+    if (!leaguesObj) {
       return NextResponse.json({
         success: true,
         leagues: [],
@@ -54,17 +47,20 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const leagueArr = (game[1].leagues[0]?.league || []) as YahooLeague[];
-    
-    console.log('League array:', JSON.stringify(leagueArr, null, 2));
-
-    const leagues = leagueArr.map((l) => ({
-      league_key: l.league?.[0]?.league_key || '',
-      name: l.league?.[0]?.name || '',
-      num_teams: l.league?.[0]?.num_teams || '',
-      current_week: l.league?.[0]?.current_week || '',
-      season: l.league?.[0]?.season || '',
-    }));
+    // Leagues are in an object with numeric keys, similar to games
+    const leagues = [];
+    for (const key in leaguesObj) {
+      if (key !== 'count' && leaguesObj[key]?.league?.[0]) {
+        const league = leaguesObj[key].league[0];
+        leagues.push({
+          league_key: league.league_key || '',
+          name: league.name || '',
+          num_teams: league.num_teams?.toString() || '',
+          current_week: league.current_week?.toString() || '',
+          season: league.season || '',
+        });
+      }
+    }
 
     console.log('Discovered leagues for game', gameKey, ':', leagues);
 
