@@ -2,13 +2,7 @@ import axios from 'axios';
 import { parseString } from 'xml2js';
 import { YahooLeagueData, Manager, Matchup } from '@/types';
 
-interface YahooTeam {
-  team_id: string;
-  name: string;
-  team_points: {
-    total: string;
-  };
-}
+// Removed unused YahooTeam interface
 
 interface YahooLeagueResponse {
   fantasy_content: {
