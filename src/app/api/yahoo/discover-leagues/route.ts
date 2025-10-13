@@ -31,13 +31,22 @@ export async function GET(req: NextRequest) {
       `/fantasy/v2/users;use_login=1/games;game_keys=${gameKey}/leagues`
     );
 
+    // Debug: log the full response
+    console.log('Raw Yahoo leagues response:', JSON.stringify(data, null, 2));
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const leaguesData = data as any;
     const user = leaguesData?.fantasy_content?.users?.[0]?.user;
+    
+    console.log('User in leagues:', JSON.stringify(user, null, 2));
+    
     const game = user?.[1]?.games?.[0]?.game;
+    
+    console.log('Game in leagues:', JSON.stringify(game, null, 2));
     
     // Check if leagues exist
     if (!game?.[1]?.leagues) {
+      console.log('No leagues found at game[1].leagues');
       return NextResponse.json({
         success: true,
         leagues: [],
@@ -46,6 +55,8 @@ export async function GET(req: NextRequest) {
     }
 
     const leagueArr = (game[1].leagues[0]?.league || []) as YahooLeague[];
+    
+    console.log('League array:', JSON.stringify(leagueArr, null, 2));
 
     const leagues = leagueArr.map((l) => ({
       league_key: l.league?.[0]?.league_key || '',
