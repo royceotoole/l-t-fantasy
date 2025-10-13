@@ -17,11 +17,14 @@ export async function POST(request: NextRequest) {
 
     // Test different game keys for 2024-25 Hockey
     const gameKeys = [
-      { key: '422', name: '2024-25 Hockey' },
-      { key: '421', name: '2023-24 Hockey' },
-      { key: '420', name: '2022-23 Hockey' },
-      { key: '414', name: '2024 Football' },
-      { key: '412', name: '2023 Baseball' }
+      { key: '427', name: '2024-25 Hockey (427)' },
+      { key: '426', name: '2024-25 Hockey (426)' },
+      { key: '425', name: '2024-25 Hockey (425)' },
+      { key: '424', name: '2024-25 Hockey (424)' },
+      { key: '423', name: '2024-25 Hockey (423)' },
+      { key: '422', name: '2023 Baseball (422)' },
+      { key: '421', name: '2023-24 Hockey (421)' },
+      { key: '420', name: '2022-23 Hockey (420)' }
     ];
 
     const results = [];
