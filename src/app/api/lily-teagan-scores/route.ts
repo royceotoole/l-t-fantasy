@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { yahooFetch, ensureNhlLeagueKey } from '@/lib/yahoo-oauth-new';
-import { calculateMatchupWinner, calculateTotalScores, calculateWeeklyScores, MatchupResult } from '@/lib/lily-teagan-scoring';
+import { calculateMatchupWinner, calculateTotalScores, calculateWeeklyScores, calculateManagerRecords, MatchupResult } from '@/lib/lily-teagan-scoring';
 
 interface YahooMatchup {
   week: string;
@@ -157,16 +157,18 @@ export async function GET() {
     console.log('All matchups:', allMatchups);
     console.log('Matchups by week:', matchupsByWeek);
 
-    // Calculate scores
-    const totalScores = calculateTotalScores(allMatchups);
-    const weeklyScores = calculateWeeklyScores(matchupsByWeek);
+      // Calculate scores
+      const totalScores = calculateTotalScores(allMatchups);
+      const weeklyScores = calculateWeeklyScores(matchupsByWeek);
+      const managerRecords = calculateManagerRecords(allMatchups);
 
-    return NextResponse.json({
-      success: true,
-      currentWeek,
-      totalScores,
-      weeklyScores,
-    });
+      return NextResponse.json({
+        success: true,
+        currentWeek,
+        totalScores,
+        weeklyScores,
+        managerRecords,
+      });
   } catch (error) {
     console.error('Error calculating Lily vs Teagan scores:', error);
     return NextResponse.json(

@@ -38,6 +38,13 @@ export interface WeeklyScore {
   matchups: MatchupResult[];
 }
 
+export interface ManagerRecord {
+  yahooTeamId: string;
+  wins: number;
+  losses: number;
+  ties: number;
+}
+
 /**
  * Calculate which team (Lily or Teagan) won a matchup
  */
@@ -158,5 +165,42 @@ export function calculateWeeklyScores(matchupsByWeek: Record<number, MatchupResu
   }
   
   return weeks.sort((a, b) => b.week - a.week); // Most recent first
+}
+
+/**
+ * Calculate individual manager records (W-L-T)
+ */
+export function calculateManagerRecords(allMatchups: MatchupResult[]): Record<string, ManagerRecord> {
+  const records: Record<string, ManagerRecord> = {};
+  
+  // Initialize records for all managers
+  const managers = getAllManagers();
+  [...managers.lily, ...managers.teagan].forEach(manager => {
+    records[manager.yahooTeamId] = {
+      yahooTeamId: manager.yahooTeamId,
+      wins: 0,
+      losses: 0,
+      ties: 0,
+    };
+  });
+  
+  // Count wins/losses/ties for each manager
+  for (const matchup of allMatchups) {
+    const team1Id = matchup.manager1.yahooTeamId;
+    const team2Id = matchup.manager2.yahooTeamId;
+    
+    if (matchup.isTie) {
+      records[team1Id].ties++;
+      records[team2Id].ties++;
+    } else if (matchup.manager1.points > matchup.manager2.points) {
+      records[team1Id].wins++;
+      records[team2Id].losses++;
+    } else {
+      records[team2Id].wins++;
+      records[team1Id].losses++;
+    }
+  }
+  
+  return records;
 }
 

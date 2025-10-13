@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { TeamScore } from '@/lib/lily-teagan-scoring';
-import type { WeeklyScore, MatchupResult } from '@/lib/lily-teagan-scoring';
+import type { WeeklyScore, MatchupResult, ManagerRecord } from '@/lib/lily-teagan-scoring';
 import { MANAGER_ASSIGNMENTS } from '@/lib/manager-assignments';
 
 export default function Home() {
   const [teamScores, setTeamScores] = useState<{ lily: TeamScore; teagan: TeamScore } | null>(null);
   const [weeklyScores, setWeeklyScores] = useState<WeeklyScore[]>([]);
+  const [managerRecords, setManagerRecords] = useState<Record<string, ManagerRecord>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,6 +17,13 @@ export default function Home() {
     const allManagers = [...MANAGER_ASSIGNMENTS.lily, ...MANAGER_ASSIGNMENTS.teagan];
     const manager = allManagers.find(m => m.yahooTeamId === yahooTeamId);
     return manager?.name || 'Unknown';
+  };
+
+  // Helper function to get manager record string
+  const getManagerRecord = (yahooTeamId: string): string => {
+    const record = managerRecords[yahooTeamId];
+    if (!record) return '(0-0-0)';
+    return `(${record.wins}-${record.losses}-${record.ties})`;
   };
 
   const fetchData = async () => {
@@ -30,6 +38,7 @@ export default function Home() {
         console.log('Data received:', data);
         setTeamScores(data.totalScores);
         setWeeklyScores(data.weeklyScores);
+        setManagerRecords(data.managerRecords || {});
       } else {
         const errorData = await response.json();
         console.error('API error:', errorData);
@@ -247,7 +256,7 @@ export default function Home() {
                         }}
                         title={lilyManagerName}
                       >
-                        {lilyManagerName}
+                        {lilyManagerName} {getManagerRecord(lilyManager.yahooTeamId)}
                       </span>
                       <span 
                         className="whitespace-nowrap flex-shrink-0"
@@ -274,7 +283,7 @@ export default function Home() {
                         }}
                         title={teaganManagerName}
                       >
-                        {teaganManagerName}
+                        {teaganManagerName} {getManagerRecord(teaganManager.yahooTeamId)}
                       </span>
                     </div>
                   );
@@ -301,14 +310,14 @@ export default function Home() {
                               className="truncate flex-1 text-left"
                               style={{ 
                                 color: '#027FCD', 
-                                opacity: 0.6,
+                                opacity: 0.5,
                                 fontFamily: 'Unica Regular', 
                                 fontSize: '15px',
                                 minWidth: 0
                               }}
                               title={manager1Name}
                             >
-                              {manager1Name}
+                              {manager1Name} {getManagerRecord(matchup.manager1.yahooTeamId)}
                             </span>
                             <span 
                               className="whitespace-nowrap flex-shrink-0"
@@ -324,14 +333,14 @@ export default function Home() {
                               className="truncate flex-1 text-right"
                               style={{ 
                                 color: '#027FCD', 
-                                opacity: 0.6,
+                                opacity: 0.5,
                                 fontFamily: 'Unica Regular', 
                                 fontSize: '15px',
                                 minWidth: 0
                               }}
                               title={manager2Name}
                             >
-                              {manager2Name}
+                              {manager2Name} {getManagerRecord(matchup.manager2.yahooTeamId)}
                             </span>
                           </div>
                         ];
@@ -344,14 +353,14 @@ export default function Home() {
                               className="truncate flex-1 text-left"
                               style={{ 
                                 color: '#027FCD', 
-                                opacity: 0.6,
+                                opacity: 0.5,
                                 fontFamily: 'Unica Regular', 
                                 fontSize: '15px',
                                 minWidth: 0
                               }}
                               title={manager1Name}
                             >
-                              {manager1Name}
+                              {manager1Name} {getManagerRecord(matchup.manager1.yahooTeamId)}
                             </span>
                             <span 
                               className="whitespace-nowrap flex-shrink-0"
@@ -367,14 +376,14 @@ export default function Home() {
                               className="truncate flex-1 text-right"
                               style={{ 
                                 color: '#027FCD', 
-                                opacity: 0.6,
+                                opacity: 0.5,
                                 fontFamily: 'Unica Regular', 
                                 fontSize: '15px',
                                 minWidth: 0
                               }}
                               title={manager2Name}
                             >
-                              {manager2Name}
+                              {manager2Name} {getManagerRecord(matchup.manager2.yahooTeamId)}
                             </span>
                           </div>
                         ];
