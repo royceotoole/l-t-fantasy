@@ -281,11 +281,12 @@ export default function Home() {
                 })
                 .concat(
                   // Add same-team matchups with "no opponent"
+                  // For each same-team matchup, create TWO rows (one for each manager)
                   weeklyScores[0].matchups
                     .filter((matchup: MatchupResult) => 
                       (matchup.manager1.team === matchup.manager2.team)
                     )
-                    .map((matchup: MatchupResult, index: number) => {
+                    .flatMap((matchup: MatchupResult, index: number) => {
                       const team = matchup.manager1.team;
                       const manager1Score = matchup.manager1.points;
                       const manager2Score = matchup.manager2.points;
@@ -293,9 +294,10 @@ export default function Home() {
                       const manager2Name = getManagerName(matchup.manager2.yahooTeamId);
 
                       if (team === 'lily') {
-                        // Show manager1 on left side, manager2 on right as "no opponent"
-                        return (
-                          <div key={`same-${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                        // Show BOTH managers on left side with "no opponent" on right
+                        return [
+                          // Manager 1 row
+                          <div key={`same-${matchup.week}-${index}-m1`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
                             <span 
                               className="truncate flex-1 text-left"
                               style={{ 
@@ -330,12 +332,50 @@ export default function Home() {
                             >
                               no opponent
                             </span>
+                          </div>,
+                          // Manager 2 row
+                          <div key={`same-${matchup.week}-${index}-m2`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                            <span 
+                              className="truncate flex-1 text-left"
+                              style={{ 
+                                color: '#027FCD', 
+                                fontFamily: 'Unica Regular', 
+                                fontSize: '15px',
+                                minWidth: 0
+                              }}
+                              title={manager2Name}
+                            >
+                              {manager2Name}
+                            </span>
+                            <span 
+                              className="whitespace-nowrap flex-shrink-0"
+                              style={{ 
+                                color: '#027FCD', 
+                                fontSize: '15px',
+                                fontFamily: 'Unica Regular'
+                              }}
+                            >
+                              {Math.round(manager2Score)} - -
+                            </span>
+                            <span 
+                              className="truncate flex-1 text-right"
+                              style={{ 
+                                color: '#027FCD', 
+                                opacity: 0.6,
+                                fontFamily: 'Unica Regular', 
+                                fontSize: '15px',
+                                minWidth: 0
+                              }}
+                            >
+                              no opponent
+                            </span>
                           </div>
-                        );
+                        ];
                       } else {
-                        // team === 'teagan', show manager1 on right side, manager2 on left as "no opponent"
-                        return (
-                          <div key={`same-${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                        // team === 'teagan', show BOTH managers on right side with "no opponent" on left
+                        return [
+                          // Manager 1 row
+                          <div key={`same-${matchup.week}-${index}-m1`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
                             <span 
                               className="truncate flex-1 text-left"
                               style={{ 
@@ -370,8 +410,45 @@ export default function Home() {
                             >
                               {manager1Name}
                             </span>
+                          </div>,
+                          // Manager 2 row
+                          <div key={`same-${matchup.week}-${index}-m2`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                            <span 
+                              className="truncate flex-1 text-left"
+                              style={{ 
+                                color: '#027FCD', 
+                                opacity: 0.6,
+                                fontFamily: 'Unica Regular', 
+                                fontSize: '15px',
+                                minWidth: 0
+                              }}
+                            >
+                              no opponent
+                            </span>
+                            <span 
+                              className="whitespace-nowrap flex-shrink-0"
+                              style={{ 
+                                color: '#027FCD', 
+                                fontSize: '15px',
+                                fontFamily: 'Unica Regular'
+                              }}
+                            >
+                              - - {Math.round(manager2Score)}
+                            </span>
+                            <span 
+                              className="truncate flex-1 text-right"
+                              style={{ 
+                                color: '#027FCD', 
+                                fontFamily: 'Unica Regular', 
+                                fontSize: '15px',
+                                minWidth: 0
+                              }}
+                              title={manager2Name}
+                            >
+                              {manager2Name}
+                            </span>
                           </div>
-                        );
+                        ];
                       }
                     })
                 )
