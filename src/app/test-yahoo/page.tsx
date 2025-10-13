@@ -6,6 +6,7 @@ export default function TestYahooPage() {
   const [accessToken, setAccessToken] = useState('');
   const [leagueId, setLeagueId] = useState('');
   const [result, setResult] = useState<{ success: boolean; data?: { leagueName: string; currentWeek: number; managersCount: number; matchupsCount: number; managers: Array<{ name: string; yahooTeamName: string }>; matchups: Array<{ manager1: string; manager2: string; manager1Score: number; manager2Score: number; isComplete: boolean }> }; error?: string } | null>(null);
+  const [debugResult, setDebugResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const testConnection = async () => {
@@ -28,6 +29,31 @@ export default function TestYahooPage() {
       setResult(data);
     } catch {
       setResult({ success: false, error: 'Network error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const debugConnection = async () => {
+    if (!accessToken || !leagueId) {
+      alert('Please enter both Access Token and League ID');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/debug-yahoo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accessToken, leagueId, gameKey: '422' }),
+      });
+
+      const data = await response.json();
+      setDebugResult(data);
+    } catch {
+      setDebugResult({ success: false, error: 'Network error' });
     } finally {
       setLoading(false);
     }
@@ -68,13 +94,23 @@ export default function TestYahooPage() {
               />
             </div>
             
-            <button
-              onClick={testConnection}
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-6 py-2 rounded-md font-medium"
-            >
-              {loading ? 'Testing...' : 'Test Connection'}
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={testConnection}
+                disabled={loading}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-6 py-2 rounded-md font-medium"
+              >
+                {loading ? 'Testing...' : 'Test Connection'}
+              </button>
+              
+              <button
+                onClick={debugConnection}
+                disabled={loading}
+                className="bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 text-white px-6 py-2 rounded-md font-medium"
+              >
+                {loading ? 'Debugging...' : 'Debug Raw Response'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -126,6 +162,15 @@ export default function TestYahooPage() {
                 <strong>Error:</strong> {result.error}
               </div>
             )}
+          </div>
+        )}
+
+        {debugResult && (
+          <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-yellow-800 mb-4">🔍 Debug Raw Response:</h3>
+            <pre className="bg-gray-100 p-4 rounded text-xs overflow-auto max-h-96">
+              {JSON.stringify(debugResult, null, 2)}
+            </pre>
           </div>
         )}
 
