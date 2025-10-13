@@ -10,17 +10,53 @@ interface YahooTeam {
   };
 }
 
-interface YahooTeamData {
-  [key: string]: [YahooTeam, unknown];
+interface YahooLeagueResponse {
+  fantasy_content: {
+    league: Array<{
+      name: string[];
+      current_week: string[];
+      [key: string]: unknown;
+    }>;
+  };
 }
 
-interface YahooMatchupData {
-  teams: [YahooTeam, YahooTeam];
-  status: string;
+interface YahooTeamsResponse {
+  fantasy_content: {
+    league: Array<{
+      teams: Array<{
+        team: Array<{
+          team_id: string[];
+          name: string[];
+          team_points: Array<{
+            total: string[];
+          }>;
+        }>;
+      }>;
+    }>;
+  };
 }
 
-interface YahooMatchup {
-  [key: string]: [YahooMatchupData, unknown];
+interface YahooMatchupResponse {
+  fantasy_content: {
+    league: Array<{
+      scoreboard: Array<{
+        matchups: Array<{
+          matchup: Array<{
+            teams: Array<{
+              team: Array<{
+                team_id: string[];
+                name: string[];
+                team_points: Array<{
+                  total: string[];
+                }>;
+              }>;
+            }>;
+            status: string[];
+          }>;
+        }>;
+      }>;
+    }>;
+  };
 }
 
 const YAHOO_BASE_URL = 'https://fantasysports.yahooapis.com/fantasy/v2';
@@ -63,7 +99,7 @@ export class YahooFantasyAPI {
     // This is actually a 2023 Baseball league, not 2024-25 Hockey
     // Use game key 412 for 2023 Baseball leagues (league 37256)
     const gameKey = this.leagueId === '37256' ? '412' : '414';
-    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}`) as any;
+    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}`) as YahooLeagueResponse;
     const league = data.fantasy_content.league[0];
     
     return {
@@ -79,10 +115,10 @@ export class YahooFantasyAPI {
     // This is actually a 2023 Baseball league, not 2024-25 Hockey
     // Use game key 412 for 2023 Baseball leagues (league 37256)
     const gameKey = this.leagueId === '37256' ? '412' : '414';
-    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/teams`) as any;
+    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/teams`) as YahooTeamsResponse;
     const teams = data.fantasy_content.league[1].teams[0].team;
     
-    return teams.map((team: any) => ({
+    return teams.map((team) => ({
       id: team.team_id[0],
       name: team.name[0],
       team: 'lily' as const, // This will be assigned later
@@ -95,14 +131,14 @@ export class YahooFantasyAPI {
     // This is actually a 2023 Baseball league, not 2024-25 Hockey
     // Use game key 412 for 2023 Baseball leagues (league 37256)
     const gameKey = this.leagueId === '37256' ? '412' : '414';
-    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/scoreboard;week=${week}`) as any;
+    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/scoreboard;week=${week}`) as YahooMatchupResponse;
     const scoreboard = data.fantasy_content.league[1].scoreboard[0];
     
     if (!scoreboard || !scoreboard.matchups) {
       return [];
     }
 
-    const matchups = scoreboard.matchups[0].matchup.map((matchup: any) => {
+    const matchups = scoreboard.matchups[0].matchup.map((matchup) => {
       const teams = matchup.teams[0].team;
       const team1 = teams[0];
       const team2 = teams[1];
