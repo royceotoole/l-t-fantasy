@@ -5,7 +5,7 @@ import { useState } from 'react';
 export default function TestGameKeysPage() {
   const [accessToken, setAccessToken] = useState('');
   const [leagueId, setLeagueId] = useState('37256');
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<Array<{ gameKey: string; name: string; success: boolean; leagueName?: string; gameCode?: string; season?: string; currentWeek?: string; numTeams?: string; error?: string | number }>>([]);
   const [loading, setLoading] = useState(false);
 
   const testGameKeys = async () => {

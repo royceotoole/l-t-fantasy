@@ -37,12 +37,12 @@ export async function POST(request: NextRequest) {
         });
 
         // Parse XML response
-        const data = await new Promise((resolve, reject) => {
+        const data = await new Promise<{ fantasy_content: { league: Array<{ name: string[]; game_code: string[]; season: string[]; current_week: string[]; num_teams: string[] }> } }>((resolve, reject) => {
           parseString(response.data, (err, result) => {
             if (err) reject(err);
-            else resolve(result);
+            else resolve(result as { fantasy_content: { league: Array<{ name: string[]; game_code: string[]; season: string[]; current_week: string[]; num_teams: string[] }> } });
           });
-        }) as any;
+        });
 
         const league = data.fantasy_content.league[0];
         results.push({
@@ -55,12 +55,14 @@ export async function POST(request: NextRequest) {
           currentWeek: league.current_week[0],
           numTeams: league.num_teams[0]
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as { response?: { status?: number } }).response : null;
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         results.push({
           gameKey: gameKey.key,
           name: gameKey.name,
           success: false,
-          error: error.response?.status || error.message
+          error: errorResponse?.status || errorMessage
         });
       }
     }
