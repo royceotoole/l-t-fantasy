@@ -8,18 +8,28 @@ export default function Home() {
   const [teamScores, setTeamScores] = useState<{ lily: TeamScore; teagan: TeamScore } | null>(null);
   const [weeklyScores, setWeeklyScores] = useState<WeeklyScore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
+      console.log('Fetching lily-teagan scores...');
       const response = await fetch('/api/lily-teagan-scores');
+      
+      console.log('Response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Data received:', data);
         setTeamScores(data.totalScores);
         setWeeklyScores(data.weeklyScores);
+      } else {
+        const errorData = await response.json();
+        console.error('API error:', errorData);
+        setError(errorData.error || 'Failed to load data');
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setIsLoading(false);
     }
@@ -36,6 +46,24 @@ export default function Home() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading fantasy data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md p-6">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Error Loading Data</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
