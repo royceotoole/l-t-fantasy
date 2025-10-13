@@ -66,6 +66,10 @@ export function calculateMatchupWinner(
   const team1Points = parseFloat(team1.team_points.total) || 0;
   const team2Points = parseFloat(team2.team_points.total) || 0;
   
+  // Round to 2 decimal places to handle floating point precision issues
+  const team1Rounded = Math.round(team1Points * 100) / 100;
+  const team2Rounded = Math.round(team2Points * 100) / 100;
+  
   const team1Side = getTeamForManager(team1Id);
   const team2Side = getTeamForManager(team2Id);
   
@@ -73,11 +77,11 @@ export function calculateMatchupWinner(
   let winner: Team | null = null;
   let isTie = false;
   
-  if (team1Points > team2Points && team1Side) {
+  if (team1Rounded > team2Rounded && team1Side) {
     winner = team1Side;
-  } else if (team2Points > team1Points && team2Side) {
+  } else if (team2Rounded > team1Rounded && team2Side) {
     winner = team2Side;
-  } else if (team1Points === team2Points) {
+  } else if (team1Rounded === team2Rounded) {
     isTie = true;
   }
   
