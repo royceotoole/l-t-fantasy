@@ -98,9 +98,8 @@ export class YahooFantasyAPI {
   }
 
   async getLeagueInfo(): Promise<YahooLeagueData> {
-    // This is actually a 2023 Baseball league, not 2024-25 Hockey
-    // Use game key 412 for 2023 Baseball leagues (league 37256)
-    const gameKey = this.leagueId === '37256' ? '412' : '414';
+    // Use game key 422 for 2024-25 Hockey leagues (league 37256)
+    const gameKey = this.leagueId === '37256' ? '422' : '414';
     const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}`) as YahooLeagueResponse;
     const league = data.fantasy_content.league[0];
     
@@ -114,9 +113,8 @@ export class YahooFantasyAPI {
   }
 
   async getManagers(): Promise<Manager[]> {
-    // This is actually a 2023 Baseball league, not 2024-25 Hockey
-    // Use game key 412 for 2023 Baseball leagues (league 37256)
-    const gameKey = this.leagueId === '37256' ? '412' : '414';
+    // Use game key 422 for 2024-25 Hockey leagues (league 37256)
+    const gameKey = this.leagueId === '37256' ? '422' : '414';
     const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/teams`) as YahooTeamsResponse;
     const teams = data.fantasy_content.league[1].teams[0].team;
     
@@ -130,9 +128,8 @@ export class YahooFantasyAPI {
   }
 
   async getCurrentWeekMatchups(week: number): Promise<Matchup[]> {
-    // This is actually a 2023 Baseball league, not 2024-25 Hockey
-    // Use game key 412 for 2023 Baseball leagues (league 37256)
-    const gameKey = this.leagueId === '37256' ? '412' : '414';
+    // Use game key 422 for 2024-25 Hockey leagues (league 37256)
+    const gameKey = this.leagueId === '37256' ? '422' : '414';
     const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/scoreboard;week=${week}`) as YahooMatchupResponse;
     const scoreboard = data.fantasy_content.league[1].scoreboard[0];
     
