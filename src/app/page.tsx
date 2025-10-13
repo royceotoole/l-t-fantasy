@@ -210,51 +210,69 @@ export default function Home() {
               </span>
             </div>
             {weeklyScores.length > 0 && weeklyScores[0]?.matchups.length > 0 ? (
-              weeklyScores[0].matchups
-                .filter((matchup: MatchupResult) => 
-                  // Only show matchups where one team is Lily and one is Teagan
+              weeklyScores[0].matchups.map((matchup: MatchupResult, index: number) => {
+                // Determine which manager is on which team
+                const isLilyVsTeagan = 
                   (matchup.manager1.team === 'lily' && matchup.manager2.team === 'teagan') ||
-                  (matchup.manager1.team === 'teagan' && matchup.manager2.team === 'lily')
-                )
-                .map((matchup: MatchupResult, index: number) => {
-                  const lilyManager = matchup.manager1.team === 'lily' ? matchup.manager1 : matchup.manager2;
-                  const teaganManager = matchup.manager1.team === 'lily' ? matchup.manager2 : matchup.manager1;
-                  const lilyScore = lilyManager.points;
-                  const teaganScore = teaganManager.points;
-                  const lilyWon = matchup.winner === 'lily';
+                  (matchup.manager1.team === 'teagan' && matchup.manager2.team === 'lily');
 
-                  return (
-                    <div key={`${matchup.week}-${index}`} className="flex justify-between items-center py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
-                      <span 
-                        style={{ 
-                          color: '#027FCD', 
-                          fontFamily: 'Unica Regular', 
-                          fontSize: '15px' // 20px - 25% = 15px
-                        }}
-                      >
-                        {lilyManager.name}
-                      </span>
-                      <span 
-                        style={{ 
-                          color: '#027FCD', 
-                          fontFamily: lilyWon ? 'Unica Bold' : 'Unica Regular', 
-                          fontSize: '15px' // 20px - 25% = 15px
-                        }}
-                      >
-                        {lilyScore.toFixed(1)} - {teaganScore.toFixed(1)}
-                      </span>
-                      <span 
-                        style={{ 
-                          color: '#027FCD', 
-                          fontFamily: 'Unica Regular', 
-                          fontSize: '15px' // 20px - 25% = 15px
-                        }}
-                      >
-                        {teaganManager.name}
-                      </span>
-                    </div>
-                  );
-                })
+                let leftManager, rightManager, leftScore, rightScore, leftWon;
+
+                if (isLilyVsTeagan) {
+                  // Lily vs Teagan matchup - show Lily on left, Teagan on right
+                  leftManager = matchup.manager1.team === 'lily' ? matchup.manager1 : matchup.manager2;
+                  rightManager = matchup.manager1.team === 'lily' ? matchup.manager2 : matchup.manager1;
+                  leftScore = leftManager.points;
+                  rightScore = rightManager.points;
+                  leftWon = matchup.winner === 'lily';
+                } else {
+                  // Same-team matchup - just show as is
+                  leftManager = matchup.manager1;
+                  rightManager = matchup.manager2;
+                  leftScore = matchup.manager1.points;
+                  rightScore = matchup.manager2.points;
+                  leftWon = leftScore > rightScore;
+                }
+
+                return (
+                  <div key={`${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1 px-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                    <span 
+                      className="truncate flex-1 text-left"
+                      style={{ 
+                        color: '#027FCD', 
+                        fontFamily: 'Unica Regular', 
+                        fontSize: '15px',
+                        minWidth: 0
+                      }}
+                      title={leftManager.name}
+                    >
+                      {leftManager.name}
+                    </span>
+                    <span 
+                      className="whitespace-nowrap flex-shrink-0"
+                      style={{ 
+                        color: '#027FCD', 
+                        fontFamily: leftWon ? 'Unica Bold' : 'Unica Regular', 
+                        fontSize: '15px'
+                      }}
+                    >
+                      {Math.round(leftScore)} - {Math.round(rightScore)}
+                    </span>
+                    <span 
+                      className="truncate flex-1 text-right"
+                      style={{ 
+                        color: '#027FCD', 
+                        fontFamily: 'Unica Regular', 
+                        fontSize: '15px',
+                        minWidth: 0
+                      }}
+                      title={rightManager.name}
+                    >
+                      {rightManager.name}
+                    </span>
+                  </div>
+                );
+              })
             ) : (
               <div className="px-4 py-8 text-center" style={{ color: '#999', fontSize: '12px' }}>
                 No matchups available
