@@ -38,12 +38,17 @@ export async function GET() {
 
     console.log('Scoreboard data received:', JSON.stringify(scoreboardData, null, 2));
 
-    const league = scoreboardData.fantasy_content.league[0];
-    const currentWeek = parseInt(league.current_week || '1');
-    const scoreboardObj = league[1]?.scoreboard;
+    const leagueArray = scoreboardData.fantasy_content.league;
+    const leagueInfo = leagueArray[0];
+    const currentWeek = parseInt(leagueInfo.current_week || '1');
+    
+    // The scoreboard is in league[1], not league[0]
+    const scoreboardWrapper = leagueArray[1];
+    const scoreboardObj = scoreboardWrapper?.scoreboard;
 
-    console.log('League:', league);
+    console.log('League info:', leagueInfo);
     console.log('Current week:', currentWeek);
+    console.log('Scoreboard wrapper:', scoreboardWrapper);
     console.log('Scoreboard object:', scoreboardObj);
 
     const allMatchups: MatchupResult[] = [];
