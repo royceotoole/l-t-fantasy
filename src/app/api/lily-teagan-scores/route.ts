@@ -32,9 +32,10 @@ export async function GET() {
   try {
     const leagueKey = await ensureNhlLeagueKey();
 
-    // Fetch scoreboard (current week matchups)
+    // Fetch scoreboard for all weeks (to get full season records)
+    // Yahoo API format: /scoreboard;weeks=1,2,3 or just /scoreboard for current week
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const scoreboardData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard`) as any;
+    const scoreboardData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard;weeks=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26`) as any;
 
     console.log('Scoreboard data received:', JSON.stringify(scoreboardData, null, 2));
 
@@ -54,14 +55,19 @@ export async function GET() {
     const allMatchups: MatchupResult[] = [];
     const matchupsByWeek: Record<number, MatchupResult[]> = {};
 
-    // Process current week matchups
-    // The scoreboard has matchups in an object with numeric keys
-    if (scoreboardObj && scoreboardObj[0]?.matchups) {
-      const matchupsObj = scoreboardObj[0].matchups;
-      const week = parseInt(scoreboardObj[0].week || currentWeek.toString());
+    // Process matchups from all weeks
+    // When requesting multiple weeks, scoreboardObj is an array of scoreboard objects
+    if (scoreboardObj) {
+      const scoreboards = Array.isArray(scoreboardObj) ? scoreboardObj : [scoreboardObj];
+      
+      for (const scoreboard of scoreboards) {
+        if (!scoreboard[0]?.matchups) continue;
+        
+        const matchupsObj = scoreboard[0].matchups;
+        const week = parseInt(scoreboard[0].week || currentWeek.toString());
 
-      console.log('Matchups object keys:', Object.keys(matchupsObj));
-      console.log('Matchups object:', JSON.stringify(matchupsObj, null, 2));
+        console.log(`Processing week ${week} - Matchups object keys:`, Object.keys(matchupsObj));
+        console.log(`Week ${week} matchups:`, JSON.stringify(matchupsObj, null, 2));
 
       // Yahoo API returns matchups as an object with numeric keys
       for (const key in matchupsObj) {
@@ -152,6 +158,7 @@ export async function GET() {
           matchupsByWeek[week].push(matchupResult);
         }
       }
+    }
     }
 
     console.log('All matchups:', allMatchups);
