@@ -53,6 +53,14 @@ interface YahooMatchupResponse {
   };
 }
 
+interface YahooStandingsResponse {
+  fantasy_content: {
+    league: Array<{
+      standings: unknown;
+    }>;
+  };
+}
+
 const YAHOO_BASE_URL = 'https://fantasysports.yahooapis.com/fantasy/v2';
 
 export class YahooFantasyAPI {
@@ -165,7 +173,7 @@ export class YahooFantasyAPI {
   }
 
   async getStandings(): Promise<unknown> {
-    const data = await this.makeRequest(`/league/${this.leagueId}/standings`) as any;
+    const data = await this.makeRequest(`/league/${this.leagueId}/standings`) as YahooStandingsResponse;
     return data.fantasy_content.league[1].standings;
   }
 }
