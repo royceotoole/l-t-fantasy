@@ -31,12 +31,14 @@ export async function POST(request: NextRequest) {
       data: response.data,
       statusCode: response.status,
     });
-  } catch (error: any) {
-    console.error('Yahoo API debug failed:', error.response?.data || error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as any).response : null;
+    console.error('Yahoo API debug failed:', errorResponse?.data || errorMessage);
     return NextResponse.json({
       success: false,
-      error: error.response?.data || error.message,
-      statusCode: error.response?.status || 500,
-    }, { status: error.response?.status || 500 });
+      error: errorResponse?.data || errorMessage,
+      statusCode: errorResponse?.status || 500,
+    }, { status: errorResponse?.status || 500 });
   }
 }
