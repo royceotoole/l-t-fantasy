@@ -1,29 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TeamScore, WeeklyStandings } from '@/types';
+import { TeamScore } from '@/lib/lily-teagan-scoring';
+import type { WeeklyScore, MatchupResult } from '@/lib/lily-teagan-scoring';
 
 export default function Home() {
-  // L-T Fantasy Hockey - Main page
   const [teamScores, setTeamScores] = useState<{ lily: TeamScore; teagan: TeamScore } | null>(null);
-  const [weeklyStandings, setWeeklyStandings] = useState<WeeklyStandings | null>(null);
+  const [weeklyScores, setWeeklyScores] = useState<WeeklyScore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = async () => {
     try {
-      const [scoresResponse, standingsResponse] = await Promise.all([
-        fetch('/api/update-scores'),
-        fetch('/api/update-standings')
-      ]);
-
-      if (scoresResponse.ok) {
-        const scoresData = await scoresResponse.json();
-        setTeamScores(scoresData.data.teamScores);
-      }
-
-      if (standingsResponse.ok) {
-        const standingsData = await standingsResponse.json();
-        setWeeklyStandings(standingsData.data.weeklyStandings);
+      const response = await fetch('/api/lily-teagan-scores');
+      
+      if (response.ok) {
+        const data = await response.json();
+        setTeamScores(data.totalScores);
+        setWeeklyScores(data.weeklyScores);
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -188,46 +181,52 @@ export default function Home() {
                 Team Teagan
               </span>
             </div>
-            {weeklyStandings?.matchups && weeklyStandings.matchups.length > 0 ? (
-              weeklyStandings.matchups.map((matchup) => {
-                const lilyManager = matchup.manager1.team === 'lily' ? matchup.manager1 : matchup.manager2;
-                const teaganManager = matchup.manager1.team === 'lily' ? matchup.manager2 : matchup.manager1;
-                const lilyScore = matchup.manager1.team === 'lily' ? matchup.manager1Score : matchup.manager2Score;
-                const teaganScore = matchup.manager1.team === 'lily' ? matchup.manager2Score : matchup.manager1Score;
-                const lilyWon = lilyScore > teaganScore;
+            {weeklyScores.length > 0 && weeklyScores[0]?.matchups.length > 0 ? (
+              weeklyScores[0].matchups
+                .filter((matchup: MatchupResult) => 
+                  // Only show matchups where one team is Lily and one is Teagan
+                  (matchup.manager1.team === 'lily' && matchup.manager2.team === 'teagan') ||
+                  (matchup.manager1.team === 'teagan' && matchup.manager2.team === 'lily')
+                )
+                .map((matchup: MatchupResult, index: number) => {
+                  const lilyManager = matchup.manager1.team === 'lily' ? matchup.manager1 : matchup.manager2;
+                  const teaganManager = matchup.manager1.team === 'lily' ? matchup.manager2 : matchup.manager1;
+                  const lilyScore = lilyManager.points;
+                  const teaganScore = teaganManager.points;
+                  const lilyWon = matchup.winner === 'lily';
 
-                return (
-                  <div key={matchup.id} className="flex justify-between items-center py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
-                    <span 
-                      style={{ 
-                        color: '#027FCD', 
-                        fontFamily: 'Unica Regular', 
-                        fontSize: '15px' // 20px - 25% = 15px
-                      }}
-                    >
-                      {lilyManager.yahooTeamName}
-                    </span>
-                    <span 
-                      style={{ 
-                        color: '#027FCD', 
-                        fontFamily: lilyWon ? 'Unica Bold' : 'Unica Regular', 
-                        fontSize: '15px' // 20px - 25% = 15px
-                      }}
-                    >
-                      {lilyScore.toFixed(0)} - {teaganScore.toFixed(0)}
-                    </span>
-                    <span 
-                      style={{ 
-                        color: '#027FCD', 
-                        fontFamily: 'Unica Regular', 
-                        fontSize: '15px' // 20px - 25% = 15px
-                      }}
-                    >
-                      {teaganManager.yahooTeamName}
-                    </span>
-                  </div>
-                );
-              })
+                  return (
+                    <div key={`${matchup.week}-${index}`} className="flex justify-between items-center py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                      <span 
+                        style={{ 
+                          color: '#027FCD', 
+                          fontFamily: 'Unica Regular', 
+                          fontSize: '15px' // 20px - 25% = 15px
+                        }}
+                      >
+                        {lilyManager.name}
+                      </span>
+                      <span 
+                        style={{ 
+                          color: '#027FCD', 
+                          fontFamily: lilyWon ? 'Unica Bold' : 'Unica Regular', 
+                          fontSize: '15px' // 20px - 25% = 15px
+                        }}
+                      >
+                        {lilyScore.toFixed(1)} - {teaganScore.toFixed(1)}
+                      </span>
+                      <span 
+                        style={{ 
+                          color: '#027FCD', 
+                          fontFamily: 'Unica Regular', 
+                          fontSize: '15px' // 20px - 25% = 15px
+                        }}
+                      >
+                        {teaganManager.name}
+                      </span>
+                    </div>
+                  );
+                })
             ) : (
               <div className="px-4 py-8 text-center" style={{ color: '#999', fontSize: '12px' }}>
                 No matchups available
