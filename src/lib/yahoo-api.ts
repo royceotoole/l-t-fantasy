@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { parseString } from 'xml2js';
 import { YahooLeagueData, Manager, Matchup } from '@/types';
 
 interface YahooTeam {
@@ -38,10 +39,20 @@ export class YahooFantasyAPI {
       const response = await axios.get(`${YAHOO_BASE_URL}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${this.accessToken}`,
-          'Accept': 'application/json',
+          'Accept': 'application/xml',
         },
       });
-      return response.data;
+      
+      // Parse XML response to JSON
+      return new Promise((resolve, reject) => {
+        parseString(response.data, (err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        });
+      });
     } catch (error) {
       console.error('Yahoo API request failed:', error);
       throw error;
@@ -49,70 +60,73 @@ export class YahooFantasyAPI {
   }
 
   async getLeagueInfo(): Promise<YahooLeagueData> {
-    // Use game key 422 for 2024-25 Hockey leagues (league 37256)
-    const gameKey = this.leagueId === '37256' ? '422' : '414';
-    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}`);
+    // This is actually a 2023 Baseball league, not 2024-25 Hockey
+    // Use game key 412 for 2023 Baseball leagues (league 37256)
+    const gameKey = this.leagueId === '37256' ? '412' : '414';
+    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}`) as any;
     const league = data.fantasy_content.league[0];
     
     return {
       leagueId: this.leagueId,
-      leagueName: league.name,
+      leagueName: league.name[0],
       managers: await this.getManagers(),
-      currentWeek: league.current_week,
-      matchups: await this.getCurrentWeekMatchups(league.current_week),
+      currentWeek: parseInt(league.current_week[0]),
+      matchups: await this.getCurrentWeekMatchups(parseInt(league.current_week[0])),
     };
   }
 
   async getManagers(): Promise<Manager[]> {
-    // Use game key 422 for 2024-25 Hockey leagues (league 37256)
-    const gameKey = this.leagueId === '37256' ? '422' : '414';
-    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/teams`);
-    const teams = data.fantasy_content.league[1].teams;
+    // This is actually a 2023 Baseball league, not 2024-25 Hockey
+    // Use game key 412 for 2023 Baseball leagues (league 37256)
+    const gameKey = this.leagueId === '37256' ? '412' : '414';
+    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/teams`) as any;
+    const teams = data.fantasy_content.league[1].teams[0].team;
     
-    return Object.values(teams as YahooTeamData).map((team) => ({
-      id: team[0].team_id,
-      name: team[0].name,
+    return teams.map((team: any) => ({
+      id: team.team_id[0],
+      name: team.name[0],
       team: 'lily' as const, // This will be assigned later
-      yahooTeamId: team[0].team_id,
-      yahooTeamName: team[0].name,
+      yahooTeamId: team.team_id[0],
+      yahooTeamName: team.name[0],
     }));
   }
 
   async getCurrentWeekMatchups(week: number): Promise<Matchup[]> {
-    // Use game key 422 for 2024-25 Hockey leagues (league 37256)
-    const gameKey = this.leagueId === '37256' ? '422' : '414';
-    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/scoreboard;week=${week}`);
-    const scoreboard = data.fantasy_content.league[1].scoreboard;
+    // This is actually a 2023 Baseball league, not 2024-25 Hockey
+    // Use game key 412 for 2023 Baseball leagues (league 37256)
+    const gameKey = this.leagueId === '37256' ? '412' : '414';
+    const data = await this.makeRequest(`/league/${gameKey}.l.${this.leagueId}/scoreboard;week=${week}`) as any;
+    const scoreboard = data.fantasy_content.league[1].scoreboard[0];
     
     if (!scoreboard || !scoreboard.matchups) {
       return [];
     }
 
-    const matchups = Object.values(scoreboard.matchups as YahooMatchup).map((matchup) => {
-      const teams = matchup[0].teams;
+    const matchups = scoreboard.matchups[0].matchup.map((matchup: any) => {
+      const teams = matchup.teams[0].team;
       const team1 = teams[0];
       const team2 = teams[1];
 
       return {
-        id: `${week}-${team1.team_id}-${team2.team_id}`,
+        id: `${week}-${team1.team_id[0]}-${team2.team_id[0]}`,
         week,
         manager1: {
-          id: team1.team_id,
-          name: team1.name,
+          id: team1.team_id[0],
+          name: team1.name[0],
           team: 'lily' as const, // This will be assigned later
-          yahooTeamId: team1.team_id,
-          yahooTeamName: team1.name,
+          yahooTeamId: team1.team_id[0],
+          yahooTeamName: team1.name[0],
         },
         manager2: {
-          id: team2.team_id,
-          name: team2.name,
+          id: team2.team_id[0],
+          name: team2.name[0],
           team: 'teagan' as const, // This will be assigned later
-          yahooTeamId: team2.team_id,
-          yahooTeamName: team2.name,
+          yahooTeamId: team2.team_id[0],
+          yahooTeamName: team2.name[0],
         },
-        manager1Score: parseFloat(team1.team_points.total) || 0,
-        manager2Score: parseFloat(team2.team_points.total) || 0,
-        isComplete: matchup[0].status === 'postevent',
+        manager1Score: parseFloat(team1.team_points[0].total[0]) || 0,
+        manager2Score: parseFloat(team2.team_points[0].total[0]) || 0,
+        isComplete: matchup.status[0] === 'postevent',
         date: new Date().toISOString(),
       };
     });
