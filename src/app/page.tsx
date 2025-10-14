@@ -205,7 +205,7 @@ export default function Home() {
               paddingLeft: '11px' // 16px - 30% = 11px
             }}
           >
-            WEEKLY MATCHUPS
+            THIS WEEK'S MATCHUPS
           </div>
           <div style={{ backgroundColor: '#EFF4F1' }}>
             <div className="flex justify-between items-center py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
