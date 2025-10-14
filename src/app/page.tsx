@@ -8,6 +8,7 @@ import { MANAGER_ASSIGNMENTS } from '@/lib/manager-assignments';
 export default function Home() {
   const [teamScores, setTeamScores] = useState<{ lily: TeamScore; teagan: TeamScore } | null>(null);
   const [weeklyScores, setWeeklyScores] = useState<WeeklyScore[]>([]);
+  const [currentWeekMatchups, setCurrentWeekMatchups] = useState<MatchupResult[]>([]);
   const [managerRecords, setManagerRecords] = useState<Record<string, ManagerRecord>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +39,7 @@ export default function Home() {
         console.log('Data received:', data);
         setTeamScores(data.totalScores);
         setWeeklyScores(data.weeklyScores);
+        setCurrentWeekMatchups(data.currentWeekMatchups || []);
         setManagerRecords(data.managerRecords || {});
       } else {
         const errorData = await response.json();
@@ -226,8 +228,8 @@ export default function Home() {
                 Team Teagan
               </span>
             </div>
-            {weeklyScores.length > 0 && weeklyScores[0]?.matchups.length > 0 ? (
-              weeklyScores[0].matchups
+            {currentWeekMatchups.length > 0 ? (
+              currentWeekMatchups
                 .filter((matchup: MatchupResult) => 
                   // Only show matchups where one team is Lily and one is Teagan
                   (matchup.manager1.team === 'lily' && matchup.manager2.team === 'teagan') ||

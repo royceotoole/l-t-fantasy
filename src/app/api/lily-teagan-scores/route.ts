@@ -214,9 +214,70 @@ export async function GET() {
     console.log('All matchups:', allMatchups);
     console.log('Matchups by week:', matchupsByWeek);
 
-    // Calculate scores
+    // Calculate scores from COMPLETED weeks only
     const totalScores = calculateTotalScores(allMatchups);
     const weeklyScores = calculateWeeklyScores(matchupsByWeek);
+    
+    // Parse CURRENT week scoreboard for display in "Weekly Matchups" section
+    const currentWeekMatchups: MatchupResult[] = [];
+    const currentWeekLeagueArray = scoreboardData.fantasy_content.league;
+    const currentWeekScoreboardWrapper = currentWeekLeagueArray[1];
+    const currentWeekScoreboardObj = currentWeekScoreboardWrapper?.scoreboard;
+
+    if (currentWeekScoreboardObj && currentWeekScoreboardObj[0]?.matchups) {
+      const matchupsObj = currentWeekScoreboardObj[0].matchups;
+
+      for (const key in matchupsObj) {
+        if (key === 'count') continue;
+
+        const matchupWrapper = matchupsObj[key];
+        if (!matchupWrapper?.matchup) continue;
+
+        const matchupArray = matchupWrapper.matchup[0];
+        if (!matchupArray) continue;
+
+        const teamsObj = matchupArray.teams;
+        if (!teamsObj) continue;
+
+        const team1Wrapper = teamsObj['0']?.team;
+        const team2Wrapper = teamsObj['1']?.team;
+
+        if (!team1Wrapper || !team2Wrapper) continue;
+
+        const team1MetadataArray = team1Wrapper[0];
+        const team2MetadataArray = team2Wrapper[0];
+
+        const team1Id = team1MetadataArray.find((item: { team_id?: string }) => item.team_id)?.team_id;
+        const team1Name = team1MetadataArray.find((item: { name?: string }) => item.name)?.name;
+        const team2Id = team2MetadataArray.find((item: { team_id?: string }) => item.team_id)?.team_id;
+        const team2Name = team2MetadataArray.find((item: { name?: string }) => item.name)?.name;
+
+        if (!team1Id || !team2Id) continue;
+
+        const team1Points = team1Wrapper[1]?.team_points?.total || '0';
+        const team2Points = team2Wrapper[1]?.team_points?.total || '0';
+
+        const matchupResult = calculateMatchupWinner({
+          teams: [
+            {
+              team_id: team1Id,
+              name: team1Name || '',
+              team_points: { total: team1Points },
+            },
+            {
+              team_id: team2Id,
+              name: team2Name || '',
+              team_points: { total: team2Points },
+            },
+          ],
+        });
+
+        if (matchupResult) {
+          matchupResult.week = currentWeek;
+          currentWeekMatchups.push(matchupResult);
+        }
+      }
+    }
     
     // Use official Yahoo records instead of calculating them
     const managerRecords: Record<string, { yahooTeamId: string; wins: number; losses: number; ties: number }> = {};
@@ -232,6 +293,7 @@ export async function GET() {
       currentWeek,
       totalScores,
       weeklyScores,
+      currentWeekMatchups, // Add current week matchups for display
       managerRecords,
     });
   } catch (error) {
