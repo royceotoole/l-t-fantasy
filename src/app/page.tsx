@@ -228,154 +228,137 @@ export default function Home() {
                 Team Teagan
               </span>
             </div>
-            {currentWeekMatchups.length > 0 ? (
-              currentWeekMatchups
-                // Sort: cross-team matchups first, then same-team matchups
-                .sort((a, b) => {
-                  const aIsSameTeam = a.manager1.team === a.manager2.team;
-                  const bIsSameTeam = b.manager1.team === b.manager2.team;
-                  if (aIsSameTeam === bIsSameTeam) return 0;
-                  return aIsSameTeam ? 1 : -1; // Same-team goes to bottom
-                })
-                .flatMap((matchup: MatchupResult, index: number) => {
-                  const manager1 = matchup.manager1;
-                  const manager2 = matchup.manager2;
-                  const manager1Name = getManagerName(manager1.yahooTeamId);
-                  const manager2Name = getManagerName(manager2.yahooTeamId);
-                  
-                  // Determine if this is a same-team matchup
-                  const isSameTeam = manager1.team === manager2.team;
-                  
-                  // Determine which manager goes on which side
-                  let lilyManager = null;
-                  let teaganManager = null;
-                  let lilyName = '';
-                  let teaganName = '';
-                  let lilyScore = 0;
-                  let teaganScore = 0;
-                  
-                  if (isSameTeam) {
-                    // Same team matchup - return TWO rows, one for each manager on their side
-                    const team = manager1.team;
-                    
-                    return [
-                      // Manager 1 row
-                      <div key={`${matchup.week}-${index}-m1`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
-                        <span 
-                          className="truncate flex-1 text-left"
-                          style={{ 
-                            color: '#027FCD', 
-                            fontFamily: 'Unica Regular', 
-                            fontSize: '15px',
-                            minWidth: 0,
-                            visibility: team === 'lily' ? 'visible' : 'hidden'
-                          }}
-                          title={team === 'lily' ? manager1Name : ''}
-                        >
-                          {team === 'lily' && (
-                            <>
-                              <span style={{ opacity: 0.5 }}>{manager1Name}</span>
-                              <span style={{ opacity: 0.25 }}> {getManagerRecord(manager1.yahooTeamId)}</span>
-                            </>
-                          )}
-                        </span>
-                        <span 
-                          className="whitespace-nowrap flex-shrink-0"
-                          style={{ 
-                            color: 'transparent',
-                            fontSize: '15px'
-                          }}
-                        >
-                          &nbsp;
-                        </span>
-                        <span 
-                          className="truncate flex-1 text-right"
-                          style={{ 
-                            color: '#027FCD', 
-                            fontFamily: 'Unica Regular', 
-                            fontSize: '15px',
-                            minWidth: 0,
-                            visibility: team === 'teagan' ? 'visible' : 'hidden'
-                          }}
-                          title={team === 'teagan' ? manager1Name : ''}
-                        >
-                          {team === 'teagan' && (
-                            <>
-                              <span style={{ opacity: 0.5 }}>{manager1Name}</span>
-                              <span style={{ opacity: 0.25 }}> {getManagerRecord(manager1.yahooTeamId)}</span>
-                            </>
-                          )}
-                        </span>
-                      </div>,
-                      // Manager 2 row
-                      <div key={`${matchup.week}-${index}-m2`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
-                        <span 
-                          className="truncate flex-1 text-left"
-                          style={{ 
-                            color: '#027FCD', 
-                            fontFamily: 'Unica Regular', 
-                            fontSize: '15px',
-                            minWidth: 0,
-                            visibility: team === 'lily' ? 'visible' : 'hidden'
-                          }}
-                          title={team === 'lily' ? manager2Name : ''}
-                        >
-                          {team === 'lily' && (
-                            <>
-                              <span style={{ opacity: 0.5 }}>{manager2Name}</span>
-                              <span style={{ opacity: 0.25 }}> {getManagerRecord(manager2.yahooTeamId)}</span>
-                            </>
-                          )}
-                        </span>
-                        <span 
-                          className="whitespace-nowrap flex-shrink-0"
-                          style={{ 
-                            color: 'transparent',
-                            fontSize: '15px'
-                          }}
-                        >
-                          &nbsp;
-                        </span>
-                        <span 
-                          className="truncate flex-1 text-right"
-                          style={{ 
-                            color: '#027FCD', 
-                            fontFamily: 'Unica Regular', 
-                            fontSize: '15px',
-                            minWidth: 0,
-                            visibility: team === 'teagan' ? 'visible' : 'hidden'
-                          }}
-                          title={team === 'teagan' ? manager2Name : ''}
-                        >
-                          {team === 'teagan' && (
-                            <>
-                              <span style={{ opacity: 0.5 }}>{manager2Name}</span>
-                              <span style={{ opacity: 0.25 }}> {getManagerRecord(manager2.yahooTeamId)}</span>
-                            </>
-                          )}
-                        </span>
-                      </div>
-                    ];
+          {currentWeekMatchups.length > 0 ? (
+            (() => {
+              // Separate cross-team and same-team matchups
+              const crossTeamMatchups: MatchupResult[] = [];
+              const lilyManagersOnly: MatchupResult[] = [];
+              const teaganManagersOnly: MatchupResult[] = [];
+              
+              currentWeekMatchups.forEach((matchup) => {
+                const isSameTeam = matchup.manager1.team === matchup.manager2.team;
+                if (isSameTeam) {
+                  // Both managers on same team
+                  if (matchup.manager1.team === 'lily') {
+                    lilyManagersOnly.push(matchup);
                   } else {
-                    // Cross-team matchup - show Lily on left, Teagan on right
-                    if (manager1.team === 'lily') {
-                      lilyManager = manager1;
-                      teaganManager = manager2;
-                    } else {
-                      lilyManager = manager2;
-                      teaganManager = manager1;
-                    }
-                    lilyName = getManagerName(lilyManager.yahooTeamId);
-                    teaganName = getManagerName(teaganManager.yahooTeamId);
-                    lilyScore = lilyManager.points;
-                    teaganScore = teaganManager.points;
+                    teaganManagersOnly.push(matchup);
+                  }
+                } else {
+                  crossTeamMatchups.push(matchup);
+                }
+              });
+              
+              // Convert same-team matchups into individual managers
+              const lilyIndividuals: Array<{ yahooTeamId: string; name: string; points: number }> = [];
+              const teaganIndividuals: Array<{ yahooTeamId: string; name: string; points: number }> = [];
+              
+              lilyManagersOnly.forEach((matchup) => {
+                lilyIndividuals.push({
+                  yahooTeamId: matchup.manager1.yahooTeamId,
+                  name: getManagerName(matchup.manager1.yahooTeamId),
+                  points: matchup.manager1.points,
+                });
+                lilyIndividuals.push({
+                  yahooTeamId: matchup.manager2.yahooTeamId,
+                  name: getManagerName(matchup.manager2.yahooTeamId),
+                  points: matchup.manager2.points,
+                });
+              });
+              
+              teaganManagersOnly.forEach((matchup) => {
+                teaganIndividuals.push({
+                  yahooTeamId: matchup.manager1.yahooTeamId,
+                  name: getManagerName(matchup.manager1.yahooTeamId),
+                  points: matchup.manager1.points,
+                });
+                teaganIndividuals.push({
+                  yahooTeamId: matchup.manager2.yahooTeamId,
+                  name: getManagerName(matchup.manager2.yahooTeamId),
+                  points: matchup.manager2.points,
+                });
+              });
+              
+              // Pair up individual managers from opposite teams
+              const maxIndividuals = Math.max(lilyIndividuals.length, teaganIndividuals.length);
+              const pairedRows: JSX.Element[] = [];
+              
+              for (let i = 0; i < maxIndividuals; i++) {
+                const lilyIndividual = lilyIndividuals[i] || null;
+                const teaganIndividual = teaganIndividuals[i] || null;
+                
+                pairedRows.push(
+                  <div key={`paired-${i}`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                    <span 
+                      className="truncate flex-1 text-left"
+                      style={{ 
+                        color: '#027FCD', 
+                        fontFamily: 'Unica Regular', 
+                        fontSize: '15px',
+                        minWidth: 0
+                      }}
+                      title={lilyIndividual?.name || ''}
+                    >
+                      {lilyIndividual && (
+                        <>
+                          <span style={{ opacity: 0.5 }}>{lilyIndividual.name}</span>
+                          <span style={{ opacity: 0.25 }}> {getManagerRecord(lilyIndividual.yahooTeamId)}</span>
+                        </>
+                      )}
+                    </span>
+                    <span 
+                      className="whitespace-nowrap flex-shrink-0"
+                      style={{ 
+                        color: 'transparent',
+                        fontSize: '15px'
+                      }}
+                    >
+                      &nbsp;
+                    </span>
+                    <span 
+                      className="truncate flex-1 text-right"
+                      style={{ 
+                        color: '#027FCD', 
+                        fontFamily: 'Unica Regular', 
+                        fontSize: '15px',
+                        minWidth: 0
+                      }}
+                      title={teaganIndividual?.name || ''}
+                    >
+                      {teaganIndividual && (
+                        <>
+                          <span style={{ opacity: 0.5 }}>{teaganIndividual.name}</span>
+                          <span style={{ opacity: 0.25 }}> {getManagerRecord(teaganIndividual.yahooTeamId)}</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
+                );
+              }
+              
+              // Render cross-team matchups first, then paired same-team rows
+              return [
+                ...crossTeamMatchups.map((matchup: MatchupResult, index: number) => {
+                  let lilyManager;
+                  let teaganManager;
+                  
+                  if (matchup.manager1.team === 'lily') {
+                    lilyManager = matchup.manager1;
+                    teaganManager = matchup.manager2;
+                  } else {
+                    lilyManager = matchup.manager2;
+                    teaganManager = matchup.manager1;
                   }
                   
+                  const lilyName = getManagerName(lilyManager.yahooTeamId);
+                  const teaganName = getManagerName(teaganManager.yahooTeamId);
+                  const lilyScore = lilyManager.points;
+                  const teaganScore = teaganManager.points;
                   const lilyWon = lilyScore > teaganScore;
                   const teaganWon = teaganScore > lilyScore;
-
-                  return [
-                    <div key={`${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                  
+                  return (
+                    <div key={`cross-${index}`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
                       <span 
                         className="truncate flex-1 text-left"
                         style={{ 
@@ -386,12 +369,8 @@ export default function Home() {
                         }}
                         title={lilyName}
                       >
-                        {lilyName && (
-                          <>
-                            <span>{lilyName}</span>
-                            <span style={{ opacity: 0.75 }}> {getManagerRecord(lilyManager?.yahooTeamId || '')}</span>
-                          </>
-                        )}
+                        <span>{lilyName}</span>
+                        <span style={{ opacity: 0.75 }}> {getManagerRecord(lilyManager.yahooTeamId)}</span>
                       </span>
                       <span 
                         className="whitespace-nowrap flex-shrink-0"
@@ -418,17 +397,16 @@ export default function Home() {
                         }}
                         title={teaganName}
                       >
-                        {teaganName && (
-                          <>
-                            <span>{teaganName}</span>
-                            <span style={{ opacity: 0.75 }}> {getManagerRecord(teaganManager?.yahooTeamId || '')}</span>
-                          </>
-                        )}
+                        <span>{teaganName}</span>
+                        <span style={{ opacity: 0.75 }}> {getManagerRecord(teaganManager.yahooTeamId)}</span>
                       </span>
                     </div>
-                  ];
-                })
-            ) : (
+                  );
+                }),
+                ...pairedRows,
+              ];
+            })()
+          ) : (
               <div className="px-4 py-8 text-center" style={{ color: '#999', fontSize: '12px' }}>
                 No matchups available
               </div>
