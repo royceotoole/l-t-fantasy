@@ -230,7 +230,14 @@ export default function Home() {
             </div>
             {currentWeekMatchups.length > 0 ? (
               currentWeekMatchups
-                .map((matchup: MatchupResult, index: number) => {
+                // Sort: cross-team matchups first, then same-team matchups
+                .sort((a, b) => {
+                  const aIsSameTeam = a.manager1.team === a.manager2.team;
+                  const bIsSameTeam = b.manager1.team === b.manager2.team;
+                  if (aIsSameTeam === bIsSameTeam) return 0;
+                  return aIsSameTeam ? 1 : -1; // Same-team goes to bottom
+                })
+                .flatMap((matchup: MatchupResult, index: number) => {
                   const manager1 = matchup.manager1;
                   const manager2 = matchup.manager2;
                   const manager1Name = getManagerName(manager1.yahooTeamId);
@@ -248,20 +255,91 @@ export default function Home() {
                   let teaganScore = 0;
                   
                   if (isSameTeam) {
-                    // Same team matchup - show both on their team's side with 50% opacity
-                    if (manager1.team === 'lily') {
-                      lilyManager = manager1;
-                      lilyName = manager1Name;
-                      lilyScore = manager1.points;
-                      teaganName = '';
-                      teaganScore = 0;
-                    } else {
-                      teaganManager = manager1;
-                      teaganName = manager1Name;
-                      teaganScore = manager1.points;
-                      lilyName = '';
-                      lilyScore = 0;
-                    }
+                    // Same team matchup - return TWO rows, one for each manager on their side
+                    const team = manager1.team;
+                    
+                    return [
+                      // Manager 1 row
+                      <div key={`${matchup.week}-${index}-m1`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                        <span 
+                          className="truncate flex-1 text-left"
+                          style={{ 
+                            color: '#027FCD', 
+                            opacity: team === 'lily' ? 0.5 : 0,
+                            fontFamily: 'Unica Regular', 
+                            fontSize: '15px',
+                            minWidth: 0,
+                            visibility: team === 'lily' ? 'visible' : 'hidden'
+                          }}
+                          title={team === 'lily' ? manager1Name : ''}
+                        >
+                          {team === 'lily' && `${manager1Name} ${getManagerRecord(manager1.yahooTeamId)}`}
+                        </span>
+                        <span 
+                          className="whitespace-nowrap flex-shrink-0"
+                          style={{ 
+                            color: 'transparent',
+                            fontSize: '15px'
+                          }}
+                        >
+                          &nbsp;
+                        </span>
+                        <span 
+                          className="truncate flex-1 text-right"
+                          style={{ 
+                            color: '#027FCD', 
+                            opacity: team === 'teagan' ? 0.5 : 0,
+                            fontFamily: 'Unica Regular', 
+                            fontSize: '15px',
+                            minWidth: 0,
+                            visibility: team === 'teagan' ? 'visible' : 'hidden'
+                          }}
+                          title={team === 'teagan' ? manager1Name : ''}
+                        >
+                          {team === 'teagan' && `${manager1Name} ${getManagerRecord(manager1.yahooTeamId)}`}
+                        </span>
+                      </div>,
+                      // Manager 2 row
+                      <div key={`${matchup.week}-${index}-m2`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                        <span 
+                          className="truncate flex-1 text-left"
+                          style={{ 
+                            color: '#027FCD', 
+                            opacity: team === 'lily' ? 0.5 : 0,
+                            fontFamily: 'Unica Regular', 
+                            fontSize: '15px',
+                            minWidth: 0,
+                            visibility: team === 'lily' ? 'visible' : 'hidden'
+                          }}
+                          title={team === 'lily' ? manager2Name : ''}
+                        >
+                          {team === 'lily' && `${manager2Name} ${getManagerRecord(manager2.yahooTeamId)}`}
+                        </span>
+                        <span 
+                          className="whitespace-nowrap flex-shrink-0"
+                          style={{ 
+                            color: 'transparent',
+                            fontSize: '15px'
+                          }}
+                        >
+                          &nbsp;
+                        </span>
+                        <span 
+                          className="truncate flex-1 text-right"
+                          style={{ 
+                            color: '#027FCD', 
+                            opacity: team === 'teagan' ? 0.5 : 0,
+                            fontFamily: 'Unica Regular', 
+                            fontSize: '15px',
+                            minWidth: 0,
+                            visibility: team === 'teagan' ? 'visible' : 'hidden'
+                          }}
+                          title={team === 'teagan' ? manager2Name : ''}
+                        >
+                          {team === 'teagan' && `${manager2Name} ${getManagerRecord(manager2.yahooTeamId)}`}
+                        </span>
+                      </div>
+                    ];
                   } else {
                     // Cross-team matchup - show Lily on left, Teagan on right
                     if (manager1.team === 'lily') {
@@ -277,16 +355,15 @@ export default function Home() {
                     teaganScore = teaganManager.points;
                   }
                   
-                  const lilyWon = lilyScore > teaganScore && !isSameTeam;
-                  const teaganWon = teaganScore > lilyScore && !isSameTeam;
+                  const lilyWon = lilyScore > teaganScore;
+                  const teaganWon = teaganScore > lilyScore;
 
-                  return (
+                  return [
                     <div key={`${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
                       <span 
                         className="truncate flex-1 text-left"
                         style={{ 
                           color: '#027FCD', 
-                          opacity: isSameTeam && manager1.team !== 'lily' ? 0 : (isSameTeam ? 0.5 : 1),
                           fontFamily: 'Unica Regular', 
                           fontSize: '15px',
                           minWidth: 0
@@ -298,28 +375,22 @@ export default function Home() {
                       <span 
                         className="whitespace-nowrap flex-shrink-0"
                         style={{ 
-                          color: isSameTeam ? 'transparent' : '#027FCD', 
+                          color: '#027FCD', 
                           fontSize: '15px'
                         }}
                       >
-                        {!isSameTeam && (
-                          <>
-                            <span style={{ fontFamily: lilyWon ? 'Unica Bold' : 'Unica Regular' }}>
-                              {Math.round(lilyScore)}
-                            </span>
-                            {' - '}
-                            <span style={{ fontFamily: teaganWon ? 'Unica Bold' : 'Unica Regular' }}>
-                              {Math.round(teaganScore)}
-                            </span>
-                          </>
-                        )}
-                        {isSameTeam && <>&nbsp;</>}
+                        <span style={{ fontFamily: lilyWon ? 'Unica Bold' : 'Unica Regular' }}>
+                          {Math.round(lilyScore)}
+                        </span>
+                        {' - '}
+                        <span style={{ fontFamily: teaganWon ? 'Unica Bold' : 'Unica Regular' }}>
+                          {Math.round(teaganScore)}
+                        </span>
                       </span>
                       <span 
                         className="truncate flex-1 text-right"
                         style={{ 
                           color: '#027FCD', 
-                          opacity: isSameTeam && manager1.team !== 'teagan' ? 0 : (isSameTeam ? 0.5 : 1),
                           fontFamily: 'Unica Regular', 
                           fontSize: '15px',
                           minWidth: 0
@@ -329,61 +400,9 @@ export default function Home() {
                         {teaganName && `${teaganName} ${getManagerRecord(teaganManager?.yahooTeamId || '')}`}
                       </span>
                     </div>
-                  );
+                  ];
+                }
                 })
-                .concat(
-                  // Show second manager from same-team matchups
-                  currentWeekMatchups
-                    .filter((matchup: MatchupResult) => 
-                      (matchup.manager1.team === matchup.manager2.team)
-                    )
-                    .flatMap((matchup: MatchupResult, index: number) => {
-                      const team = matchup.manager1.team;
-                      const manager2 = matchup.manager2;
-                      const manager2Name = getManagerName(manager2.yahooTeamId);
-                      
-                      return [
-                        <div key={`same-${matchup.week}-${index}-m2`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
-                          <span 
-                            className="truncate flex-1 text-left"
-                            style={{ 
-                              color: '#027FCD', 
-                              opacity: team === 'lily' ? 0.5 : 0,
-                              fontFamily: 'Unica Regular', 
-                              fontSize: '15px',
-                              minWidth: 0
-                            }}
-                            title={team === 'lily' ? manager2Name : ''}
-                          >
-                            {team === 'lily' && `${manager2Name} ${getManagerRecord(manager2.yahooTeamId)}`}
-                          </span>
-                          <span 
-                            className="whitespace-nowrap flex-shrink-0"
-                            style={{ 
-                              color: 'transparent',
-                              fontSize: '15px',
-                              fontFamily: 'Unica Regular'
-                            }}
-                          >
-                            &nbsp;
-                          </span>
-                          <span 
-                            className="truncate flex-1 text-right"
-                            style={{ 
-                              color: '#027FCD', 
-                              opacity: team === 'teagan' ? 0.5 : 0,
-                              fontFamily: 'Unica Regular', 
-                              fontSize: '15px',
-                              minWidth: 0
-                            }}
-                            title={team === 'teagan' ? manager2Name : ''}
-                          >
-                            {team === 'teagan' && `${manager2Name} ${getManagerRecord(manager2.yahooTeamId)}`}
-                          </span>
-                        </div>
-                      ];
-                    })
-                )
             ) : (
               <div className="px-4 py-8 text-center" style={{ color: '#999', fontSize: '12px' }}>
                 No matchups available
