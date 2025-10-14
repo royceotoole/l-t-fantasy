@@ -302,7 +302,7 @@ export default function Home() {
                       {lilyIndividual && (
                         <>
                           <span style={{ opacity: 0.5 }}>{lilyIndividual.name}</span>
-                          <span style={{ opacity: 0.5 }}> {getManagerRecord(lilyIndividual.yahooTeamId)}</span>
+                          <span style={{ opacity: 0.25 }}> {getManagerRecord(lilyIndividual.yahooTeamId)}</span>
                         </>
                       )}
                     </span>
@@ -328,7 +328,7 @@ export default function Home() {
                       {teaganIndividual && (
                         <>
                           <span style={{ opacity: 0.5 }}>{teaganIndividual.name}</span>
-                          <span style={{ opacity: 0.5 }}> {getManagerRecord(teaganIndividual.yahooTeamId)}</span>
+                          <span style={{ opacity: 0.25 }}> {getManagerRecord(teaganIndividual.yahooTeamId)}</span>
                         </>
                       )}
                     </span>
