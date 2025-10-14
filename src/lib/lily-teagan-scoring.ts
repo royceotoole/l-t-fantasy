@@ -106,7 +106,7 @@ export function calculateMatchupWinner(
 
 /**
  * Calculate total scores for Lily and Teagan
- * Wins = 1 point, Ties = 0.5 points each
+ * Each manager contributes: 1 point for win, 0.5 for tie, 0 for loss
  */
 export function calculateTotalScores(allMatchups: MatchupResult[]): {
   lily: TeamScore;
@@ -116,23 +116,25 @@ export function calculateTotalScores(allMatchups: MatchupResult[]): {
   let teaganScore = 0;
   
   for (const matchup of allMatchups) {
+    const team1 = matchup.manager1.team;
+    const team2 = matchup.manager2.team;
+    
     if (matchup.isTie) {
-      // Both teams get 0.5 points for a tie
-      const team1 = matchup.manager1.team;
-      const team2 = matchup.manager2.team;
+      // Each manager gets 0.5 points for a tie
+      if (team1 === 'lily') lilyScore += 0.5;
+      else if (team1 === 'teagan') teaganScore += 0.5;
       
-      // Only count ties in cross-team matchups
-      if (team1 !== team2) {
-        if (team1 === 'lily') lilyScore += 0.5;
-        else if (team1 === 'teagan') teaganScore += 0.5;
-        
-        if (team2 === 'lily') lilyScore += 0.5;
-        else if (team2 === 'teagan') teaganScore += 0.5;
+      if (team2 === 'lily') lilyScore += 0.5;
+      else if (team2 === 'teagan') teaganScore += 0.5;
+    } else {
+      // Winner gets 1 point, loser gets 0
+      if (matchup.manager1.points > matchup.manager2.points) {
+        if (team1 === 'lily') lilyScore += 1;
+        else if (team1 === 'teagan') teaganScore += 1;
+      } else {
+        if (team2 === 'lily') lilyScore += 1;
+        else if (team2 === 'teagan') teaganScore += 1;
       }
-    } else if (matchup.winner === 'lily') {
-      lilyScore++;
-    } else if (matchup.winner === 'teagan') {
-      teaganScore++;
     }
   }
   
@@ -154,7 +156,7 @@ export function calculateTotalScores(allMatchups: MatchupResult[]): {
 
 /**
  * Calculate weekly scores
- * Wins = 1 point, Ties = 0.5 points each
+ * Each manager contributes: 1 point for win, 0.5 for tie, 0 for loss
  */
 export function calculateWeeklyScores(matchupsByWeek: Record<number, MatchupResult[]>): WeeklyScore[] {
   const weeks: WeeklyScore[] = [];
@@ -165,23 +167,26 @@ export function calculateWeeklyScores(matchupsByWeek: Record<number, MatchupResu
     let ties = 0;
     
     for (const matchup of matchups) {
+      const team1 = matchup.manager1.team;
+      const team2 = matchup.manager2.team;
+      
       if (matchup.isTie) {
-        const team1 = matchup.manager1.team;
-        const team2 = matchup.manager2.team;
+        ties++;
+        // Each manager gets 0.5 points for a tie
+        if (team1 === 'lily') lilyScore += 0.5;
+        else if (team1 === 'teagan') teaganScore += 0.5;
         
-        // Only count ties in cross-team matchups
-        if (team1 !== team2) {
-          ties++;
-          if (team1 === 'lily') lilyScore += 0.5;
-          else if (team1 === 'teagan') teaganScore += 0.5;
-          
-          if (team2 === 'lily') lilyScore += 0.5;
-          else if (team2 === 'teagan') teaganScore += 0.5;
+        if (team2 === 'lily') lilyScore += 0.5;
+        else if (team2 === 'teagan') teaganScore += 0.5;
+      } else {
+        // Winner gets 1 point, loser gets 0
+        if (matchup.manager1.points > matchup.manager2.points) {
+          if (team1 === 'lily') lilyScore += 1;
+          else if (team1 === 'teagan') teaganScore += 1;
+        } else {
+          if (team2 === 'lily') lilyScore += 1;
+          else if (team2 === 'teagan') teaganScore += 1;
         }
-      } else if (matchup.winner === 'lily') {
-        lilyScore++;
-      } else if (matchup.winner === 'teagan') {
-        teaganScore++;
       }
     }
     
