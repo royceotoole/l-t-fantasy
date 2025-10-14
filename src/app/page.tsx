@@ -230,21 +230,55 @@ export default function Home() {
             </div>
             {currentWeekMatchups.length > 0 ? (
               currentWeekMatchups
-                .filter((matchup: MatchupResult) => 
-                  // Only show matchups where one team is Lily and one is Teagan
-                  (matchup.manager1.team === 'lily' && matchup.manager2.team === 'teagan') ||
-                  (matchup.manager1.team === 'teagan' && matchup.manager2.team === 'lily')
-                )
                 .map((matchup: MatchupResult, index: number) => {
-                  // Lily vs Teagan matchup - show Lily on left, Teagan on right
-                  const lilyManager = matchup.manager1.team === 'lily' ? matchup.manager1 : matchup.manager2;
-                  const teaganManager = matchup.manager1.team === 'lily' ? matchup.manager2 : matchup.manager1;
-                  const lilyScore = lilyManager.points;
-                  const teaganScore = teaganManager.points;
-                  const lilyWon = lilyScore > teaganScore;
-                  const teaganWon = teaganScore > lilyScore;
-                  const lilyManagerName = getManagerName(lilyManager.yahooTeamId);
-                  const teaganManagerName = getManagerName(teaganManager.yahooTeamId);
+                  const manager1 = matchup.manager1;
+                  const manager2 = matchup.manager2;
+                  const manager1Name = getManagerName(manager1.yahooTeamId);
+                  const manager2Name = getManagerName(manager2.yahooTeamId);
+                  
+                  // Determine if this is a same-team matchup
+                  const isSameTeam = manager1.team === manager2.team;
+                  
+                  // Determine which manager goes on which side
+                  let lilyManager = null;
+                  let teaganManager = null;
+                  let lilyName = '';
+                  let teaganName = '';
+                  let lilyScore = 0;
+                  let teaganScore = 0;
+                  
+                  if (isSameTeam) {
+                    // Same team matchup - show both on their team's side with 50% opacity
+                    if (manager1.team === 'lily') {
+                      lilyManager = manager1;
+                      lilyName = manager1Name;
+                      lilyScore = manager1.points;
+                      teaganName = '';
+                      teaganScore = 0;
+                    } else {
+                      teaganManager = manager1;
+                      teaganName = manager1Name;
+                      teaganScore = manager1.points;
+                      lilyName = '';
+                      lilyScore = 0;
+                    }
+                  } else {
+                    // Cross-team matchup - show Lily on left, Teagan on right
+                    if (manager1.team === 'lily') {
+                      lilyManager = manager1;
+                      teaganManager = manager2;
+                    } else {
+                      lilyManager = manager2;
+                      teaganManager = manager1;
+                    }
+                    lilyName = getManagerName(lilyManager.yahooTeamId);
+                    teaganName = getManagerName(teaganManager.yahooTeamId);
+                    lilyScore = lilyManager.points;
+                    teaganScore = teaganManager.points;
+                  }
+                  
+                  const lilyWon = lilyScore > teaganScore && !isSameTeam;
+                  const teaganWon = teaganScore > lilyScore && !isSameTeam;
 
                   return (
                     <div key={`${matchup.week}-${index}`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
@@ -252,144 +286,102 @@ export default function Home() {
                         className="truncate flex-1 text-left"
                         style={{ 
                           color: '#027FCD', 
+                          opacity: isSameTeam && manager1.team !== 'lily' ? 0 : (isSameTeam ? 0.5 : 1),
                           fontFamily: 'Unica Regular', 
                           fontSize: '15px',
                           minWidth: 0
                         }}
-                        title={lilyManagerName}
+                        title={lilyName}
                       >
-                        {lilyManagerName} {getManagerRecord(lilyManager.yahooTeamId)}
+                        {lilyName && `${lilyName} ${getManagerRecord(lilyManager?.yahooTeamId || '')}`}
                       </span>
                       <span 
                         className="whitespace-nowrap flex-shrink-0"
                         style={{ 
-                          color: '#027FCD', 
+                          color: isSameTeam ? 'transparent' : '#027FCD', 
                           fontSize: '15px'
                         }}
                       >
-                        <span style={{ fontFamily: lilyWon ? 'Unica Bold' : 'Unica Regular' }}>
-                          {Math.round(lilyScore)}
-                        </span>
-                        {' - '}
-                        <span style={{ fontFamily: teaganWon ? 'Unica Bold' : 'Unica Regular' }}>
-                          {Math.round(teaganScore)}
-                        </span>
+                        {!isSameTeam && (
+                          <>
+                            <span style={{ fontFamily: lilyWon ? 'Unica Bold' : 'Unica Regular' }}>
+                              {Math.round(lilyScore)}
+                            </span>
+                            {' - '}
+                            <span style={{ fontFamily: teaganWon ? 'Unica Bold' : 'Unica Regular' }}>
+                              {Math.round(teaganScore)}
+                            </span>
+                          </>
+                        )}
+                        {isSameTeam && <>&nbsp;</>}
                       </span>
                       <span 
                         className="truncate flex-1 text-right"
                         style={{ 
                           color: '#027FCD', 
+                          opacity: isSameTeam && manager1.team !== 'teagan' ? 0 : (isSameTeam ? 0.5 : 1),
                           fontFamily: 'Unica Regular', 
                           fontSize: '15px',
                           minWidth: 0
                         }}
-                        title={teaganManagerName}
+                        title={teaganName}
                       >
-                        {teaganManagerName} {getManagerRecord(teaganManager.yahooTeamId)}
+                        {teaganName && `${teaganName} ${getManagerRecord(teaganManager?.yahooTeamId || '')}`}
                       </span>
                     </div>
                   );
                 })
                 .concat(
-                  // Add same-team matchups as faded "ghost" matchups
-                  // For each same-team matchup, create TWO rows (one for each manager)
-                  weeklyScores[0].matchups
+                  // Show second manager from same-team matchups
+                  currentWeekMatchups
                     .filter((matchup: MatchupResult) => 
                       (matchup.manager1.team === matchup.manager2.team)
                     )
                     .flatMap((matchup: MatchupResult, index: number) => {
                       const team = matchup.manager1.team;
-                      const manager1Name = getManagerName(matchup.manager1.yahooTeamId);
-                      const manager2Name = getManagerName(matchup.manager2.yahooTeamId);
-
-                      // Both managers are on the same team, so both should be faded (60% opacity)
-                      if (team === 'lily') {
-                        // Show BOTH Lily managers faded (one on left, one on right)
-                        return [
-                          // Manager 1 on left, Manager 2 on right (both faded)
-                          <div key={`same-${matchup.week}-${index}-m1`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
-                            <span 
-                              className="truncate flex-1 text-left"
-                              style={{ 
-                                color: '#027FCD', 
-                                opacity: 0.5,
-                                fontFamily: 'Unica Regular', 
-                                fontSize: '15px',
-                                minWidth: 0
-                              }}
-                              title={manager1Name}
-                            >
-                              {manager1Name} {getManagerRecord(matchup.manager1.yahooTeamId)}
-                            </span>
-                            <span 
-                              className="whitespace-nowrap flex-shrink-0"
-                              style={{ 
-                                color: 'transparent',
-                                fontSize: '15px',
-                                fontFamily: 'Unica Regular'
-                              }}
-                            >
-                              &nbsp;
-                            </span>
-                            <span 
-                              className="truncate flex-1 text-right"
-                              style={{ 
-                                color: '#027FCD', 
-                                opacity: 0.5,
-                                fontFamily: 'Unica Regular', 
-                                fontSize: '15px',
-                                minWidth: 0
-                              }}
-                              title={manager2Name}
-                            >
-                              {manager2Name} {getManagerRecord(matchup.manager2.yahooTeamId)}
-                            </span>
-                          </div>
-                        ];
-                      } else {
-                        // team === 'teagan', show BOTH Teagan managers faded (one on left, one on right)
-                        return [
-                          // Manager 1 on left, Manager 2 on right (both faded)
-                          <div key={`same-${matchup.week}-${index}-m1`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
-                            <span 
-                              className="truncate flex-1 text-left"
-                              style={{ 
-                                color: '#027FCD', 
-                                opacity: 0.5,
-                                fontFamily: 'Unica Regular', 
-                                fontSize: '15px',
-                                minWidth: 0
-                              }}
-                              title={manager1Name}
-                            >
-                              {manager1Name} {getManagerRecord(matchup.manager1.yahooTeamId)}
-                            </span>
-                            <span 
-                              className="whitespace-nowrap flex-shrink-0"
-                              style={{ 
-                                color: 'transparent',
-                                fontSize: '15px',
-                                fontFamily: 'Unica Regular'
-                              }}
-                            >
-                              &nbsp;
-                            </span>
-                            <span 
-                              className="truncate flex-1 text-right"
-                              style={{ 
-                                color: '#027FCD', 
-                                opacity: 0.5,
-                                fontFamily: 'Unica Regular', 
-                                fontSize: '15px',
-                                minWidth: 0
-                              }}
-                              title={manager2Name}
-                            >
-                              {manager2Name} {getManagerRecord(matchup.manager2.yahooTeamId)}
-                            </span>
-                          </div>
-                        ];
-                      }
+                      const manager2 = matchup.manager2;
+                      const manager2Name = getManagerName(manager2.yahooTeamId);
+                      
+                      return [
+                        <div key={`same-${matchup.week}-${index}-m2`} className="flex justify-between items-center gap-2 py-1" style={{ borderBottom: '1.5px solid #027FCD' }}>
+                          <span 
+                            className="truncate flex-1 text-left"
+                            style={{ 
+                              color: '#027FCD', 
+                              opacity: team === 'lily' ? 0.5 : 0,
+                              fontFamily: 'Unica Regular', 
+                              fontSize: '15px',
+                              minWidth: 0
+                            }}
+                            title={team === 'lily' ? manager2Name : ''}
+                          >
+                            {team === 'lily' && `${manager2Name} ${getManagerRecord(manager2.yahooTeamId)}`}
+                          </span>
+                          <span 
+                            className="whitespace-nowrap flex-shrink-0"
+                            style={{ 
+                              color: 'transparent',
+                              fontSize: '15px',
+                              fontFamily: 'Unica Regular'
+                            }}
+                          >
+                            &nbsp;
+                          </span>
+                          <span 
+                            className="truncate flex-1 text-right"
+                            style={{ 
+                              color: '#027FCD', 
+                              opacity: team === 'teagan' ? 0.5 : 0,
+                              fontFamily: 'Unica Regular', 
+                              fontSize: '15px',
+                              minWidth: 0
+                            }}
+                            title={team === 'teagan' ? manager2Name : ''}
+                          >
+                            {team === 'teagan' && `${manager2Name} ${getManagerRecord(manager2.yahooTeamId)}`}
+                          </span>
+                        </div>
+                      ];
                     })
                 )
             ) : (
