@@ -427,7 +427,6 @@ export default function Home() {
                       </span>
                     </div>
                   ];
-                }
                 })
             ) : (
               <div className="px-4 py-8 text-center" style={{ color: '#999', fontSize: '12px' }}>
