@@ -265,7 +265,6 @@ export default function Home() {
                           className="truncate flex-1 text-left"
                           style={{ 
                             color: '#027FCD', 
-                            opacity: team === 'lily' ? 0.5 : 0,
                             fontFamily: 'Unica Regular', 
                             fontSize: '15px',
                             minWidth: 0,
@@ -273,7 +272,12 @@ export default function Home() {
                           }}
                           title={team === 'lily' ? manager1Name : ''}
                         >
-                          {team === 'lily' && `${manager1Name} ${getManagerRecord(manager1.yahooTeamId)}`}
+                          {team === 'lily' && (
+                            <>
+                              <span style={{ opacity: 0.5 }}>{manager1Name}</span>
+                              <span style={{ opacity: 0.25 }}> {getManagerRecord(manager1.yahooTeamId)}</span>
+                            </>
+                          )}
                         </span>
                         <span 
                           className="whitespace-nowrap flex-shrink-0"
@@ -288,7 +292,6 @@ export default function Home() {
                           className="truncate flex-1 text-right"
                           style={{ 
                             color: '#027FCD', 
-                            opacity: team === 'teagan' ? 0.5 : 0,
                             fontFamily: 'Unica Regular', 
                             fontSize: '15px',
                             minWidth: 0,
@@ -296,7 +299,12 @@ export default function Home() {
                           }}
                           title={team === 'teagan' ? manager1Name : ''}
                         >
-                          {team === 'teagan' && `${manager1Name} ${getManagerRecord(manager1.yahooTeamId)}`}
+                          {team === 'teagan' && (
+                            <>
+                              <span style={{ opacity: 0.5 }}>{manager1Name}</span>
+                              <span style={{ opacity: 0.25 }}> {getManagerRecord(manager1.yahooTeamId)}</span>
+                            </>
+                          )}
                         </span>
                       </div>,
                       // Manager 2 row
@@ -305,7 +313,6 @@ export default function Home() {
                           className="truncate flex-1 text-left"
                           style={{ 
                             color: '#027FCD', 
-                            opacity: team === 'lily' ? 0.5 : 0,
                             fontFamily: 'Unica Regular', 
                             fontSize: '15px',
                             minWidth: 0,
@@ -313,7 +320,12 @@ export default function Home() {
                           }}
                           title={team === 'lily' ? manager2Name : ''}
                         >
-                          {team === 'lily' && `${manager2Name} ${getManagerRecord(manager2.yahooTeamId)}`}
+                          {team === 'lily' && (
+                            <>
+                              <span style={{ opacity: 0.5 }}>{manager2Name}</span>
+                              <span style={{ opacity: 0.25 }}> {getManagerRecord(manager2.yahooTeamId)}</span>
+                            </>
+                          )}
                         </span>
                         <span 
                           className="whitespace-nowrap flex-shrink-0"
@@ -328,7 +340,6 @@ export default function Home() {
                           className="truncate flex-1 text-right"
                           style={{ 
                             color: '#027FCD', 
-                            opacity: team === 'teagan' ? 0.5 : 0,
                             fontFamily: 'Unica Regular', 
                             fontSize: '15px',
                             minWidth: 0,
@@ -336,7 +347,12 @@ export default function Home() {
                           }}
                           title={team === 'teagan' ? manager2Name : ''}
                         >
-                          {team === 'teagan' && `${manager2Name} ${getManagerRecord(manager2.yahooTeamId)}`}
+                          {team === 'teagan' && (
+                            <>
+                              <span style={{ opacity: 0.5 }}>{manager2Name}</span>
+                              <span style={{ opacity: 0.25 }}> {getManagerRecord(manager2.yahooTeamId)}</span>
+                            </>
+                          )}
                         </span>
                       </div>
                     ];
@@ -370,7 +386,12 @@ export default function Home() {
                         }}
                         title={lilyName}
                       >
-                        {lilyName && `${lilyName} ${getManagerRecord(lilyManager?.yahooTeamId || '')}`}
+                        {lilyName && (
+                          <>
+                            <span>{lilyName}</span>
+                            <span style={{ opacity: 0.75 }}> {getManagerRecord(lilyManager?.yahooTeamId || '')}</span>
+                          </>
+                        )}
                       </span>
                       <span 
                         className="whitespace-nowrap flex-shrink-0"
@@ -397,7 +418,12 @@ export default function Home() {
                         }}
                         title={teaganName}
                       >
-                        {teaganName && `${teaganName} ${getManagerRecord(teaganManager?.yahooTeamId || '')}`}
+                        {teaganName && (
+                          <>
+                            <span>{teaganName}</span>
+                            <span style={{ opacity: 0.75 }}> {getManagerRecord(teaganManager?.yahooTeamId || '')}</span>
+                          </>
+                        )}
                       </span>
                     </div>
                   ];
