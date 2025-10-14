@@ -45,14 +45,17 @@ export async function GET() {
     const leagueInfo = leagueArray[0];
     const currentWeek = parseInt(leagueInfo.current_week || '1');
     
-    // Fetch all weeks from 1 to current week for total score calculation
-    const weeksToFetch = Array.from({ length: currentWeek }, (_, i) => i + 1).join(',');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const allWeeksData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard;weeks=${weeksToFetch}`) as any;
+    // Fetch all weeks individually (Yahoo API seems to only return current week when multiple weeks requested)
+    const allWeeksDataArray = [];
+    for (let week = 1; week <= currentWeek; week++) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const weekData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard;week=${week}`) as any;
+      allWeeksDataArray.push(weekData);
+    }
 
     console.log('Standings data received:', JSON.stringify(standingsData, null, 2));
     console.log('Scoreboard data received:', JSON.stringify(scoreboardData, null, 2));
-    console.log('All weeks data received:', JSON.stringify(allWeeksData, null, 2));
+    console.log('All weeks data array length:', allWeeksDataArray.length);
 
     // Parse standings to get official Yahoo records for each team
     const standingsLeagueArray = standingsData.fantasy_content.league;
@@ -100,20 +103,18 @@ export async function GET() {
     const matchupsByWeek: Record<number, MatchupResult[]> = {};
 
     // Process ALL weeks' matchups for total score calculation
-    const allWeeksLeagueArray = allWeeksData.fantasy_content.league;
-    const allWeeksScoreboardWrapper = allWeeksLeagueArray[1];
-    const allWeeksScoreboardObj = allWeeksScoreboardWrapper?.scoreboard;
+    // Loop through each week's data separately
+    for (const weekData of allWeeksDataArray) {
+      const weekLeagueArray = weekData.fantasy_content.league;
+      const weekScoreboardWrapper = weekLeagueArray[1];
+      const weekScoreboardObj = weekScoreboardWrapper?.scoreboard;
 
-    if (allWeeksScoreboardObj) {
-      const scoreboards = Array.isArray(allWeeksScoreboardObj) ? allWeeksScoreboardObj : [allWeeksScoreboardObj];
+      if (!weekScoreboardObj || !weekScoreboardObj[0]?.matchups) continue;
       
-      for (const scoreboard of scoreboards) {
-        if (!scoreboard[0]?.matchups) continue;
-        
-        const matchupsObj = scoreboard[0].matchups;
-        const week = parseInt(scoreboard[0].week || currentWeek.toString());
+      const matchupsObj = weekScoreboardObj[0].matchups;
+      const week = parseInt(weekScoreboardObj[0].week || currentWeek.toString());
 
-        console.log(`Processing week ${week} - Matchups object keys:`, Object.keys(matchupsObj));
+      console.log(`Processing week ${week} - Matchups object keys:`, Object.keys(matchupsObj));
 
       // Yahoo API returns matchups as an object with numeric keys
       for (const key in matchupsObj) {
@@ -204,7 +205,6 @@ export async function GET() {
           matchupsByWeek[week].push(matchupResult);
         }
       }
-    }
     }
 
     console.log('All matchups:', allMatchups);
