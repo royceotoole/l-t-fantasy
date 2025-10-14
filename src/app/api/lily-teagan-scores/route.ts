@@ -45,9 +45,13 @@ export async function GET() {
     const leagueInfo = leagueArray[0];
     const currentWeek = parseInt(leagueInfo.current_week || '1');
     
-    // Fetch all weeks individually (Yahoo API seems to only return current week when multiple weeks requested)
+    // Only fetch COMPLETED weeks (not the current ongoing week)
+    // Current week is still in progress, so we only count weeks 1 through (currentWeek - 1)
+    const lastCompletedWeek = Math.max(currentWeek - 1, 0);
+    
+    // Fetch all completed weeks individually (Yahoo API seems to only return current week when multiple weeks requested)
     const allWeeksDataArray = [];
-    for (let week = 1; week <= currentWeek; week++) {
+    for (let week = 1; week <= lastCompletedWeek; week++) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const weekData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard;week=${week}`) as any;
       allWeeksDataArray.push(weekData);
