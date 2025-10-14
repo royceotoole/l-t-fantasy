@@ -205,30 +205,31 @@ export async function GET() {
         }
       }
     }
+    }
 
     console.log('All matchups:', allMatchups);
     console.log('Matchups by week:', matchupsByWeek);
 
-      // Calculate scores
-      const totalScores = calculateTotalScores(allMatchups);
-      const weeklyScores = calculateWeeklyScores(matchupsByWeek);
-      
-      // Use official Yahoo records instead of calculating them
-      const managerRecords: Record<string, { yahooTeamId: string; wins: number; losses: number; ties: number }> = {};
-      for (const teamId in officialRecords) {
-        managerRecords[teamId] = {
-          yahooTeamId: teamId,
-          ...officialRecords[teamId],
-        };
-      }
+    // Calculate scores
+    const totalScores = calculateTotalScores(allMatchups);
+    const weeklyScores = calculateWeeklyScores(matchupsByWeek);
+    
+    // Use official Yahoo records instead of calculating them
+    const managerRecords: Record<string, { yahooTeamId: string; wins: number; losses: number; ties: number }> = {};
+    for (const teamId in officialRecords) {
+      managerRecords[teamId] = {
+        yahooTeamId: teamId,
+        ...officialRecords[teamId],
+      };
+    }
 
-      return NextResponse.json({
-        success: true,
-        currentWeek,
-        totalScores,
-        weeklyScores,
-        managerRecords,
-      });
+    return NextResponse.json({
+      success: true,
+      currentWeek,
+      totalScores,
+      weeklyScores,
+      managerRecords,
+    });
   } catch (error) {
     console.error('Error calculating Lily vs Teagan scores:', error);
     return NextResponse.json(
