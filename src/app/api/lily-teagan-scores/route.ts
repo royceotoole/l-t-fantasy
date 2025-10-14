@@ -64,12 +64,12 @@ export async function GET() {
         
         if (!teamArray || !Array.isArray(teamArray)) continue;
         
-        // teamArray[0] is metadata array, teamArray[1] is standings stats
+        // teamArray[0] is metadata array, teamArray[1] is stats, teamArray[2] is team_standings
         const teamMetadata = teamArray[0];
-        const teamStats = teamArray[1];
+        const teamStandings = teamArray[2];
         
         const teamId = teamMetadata?.find((item: { team_id?: string }) => item.team_id)?.team_id;
-        const outcomeTotals = teamStats?.team_standings?.outcome_totals;
+        const outcomeTotals = teamStandings?.team_standings?.outcome_totals;
         
         if (teamId && outcomeTotals) {
           // Handle both string and number values from Yahoo API
