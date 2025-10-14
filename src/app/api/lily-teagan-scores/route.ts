@@ -36,7 +36,11 @@ export async function GET() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const standingsData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/standings`) as any;
     
-    // Fetch current week scoreboard for matchup display
+    // Fetch all weeks' scoreboards to calculate total Lily vs Teagan scores
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allWeeksData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard;weeks=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26`) as any;
+    
+    // Also fetch current week scoreboard for matchup display
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const scoreboardData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard`) as any;
 
@@ -68,10 +72,15 @@ export async function GET() {
         const outcomeTotals = teamStats?.team_standings?.outcome_totals;
         
         if (teamId && outcomeTotals) {
+          // Handle both string and number values from Yahoo API
+          const wins = typeof outcomeTotals.wins === 'string' ? parseInt(outcomeTotals.wins) : (outcomeTotals.wins || 0);
+          const losses = typeof outcomeTotals.losses === 'string' ? parseInt(outcomeTotals.losses) : (outcomeTotals.losses || 0);
+          const ties = typeof outcomeTotals.ties === 'string' ? parseInt(outcomeTotals.ties) : (outcomeTotals.ties || 0);
+          
           officialRecords[teamId] = {
-            wins: parseInt(outcomeTotals.wins || '0'),
-            losses: parseInt(outcomeTotals.losses || '0'),
-            ties: parseInt(outcomeTotals.ties || '0'),
+            wins,
+            losses,
+            ties,
           };
         }
       }
@@ -79,29 +88,32 @@ export async function GET() {
     
     console.log('Official records from Yahoo:', officialRecords);
 
+    // Get league info from current week scoreboard
     const leagueArray = scoreboardData.fantasy_content.league;
     const leagueInfo = leagueArray[0];
     const currentWeek = parseInt(leagueInfo.current_week || '1');
-    
-    // The scoreboard is in league[1], not league[0]
-    const scoreboardWrapper = leagueArray[1];
-    const scoreboardObj = scoreboardWrapper?.scoreboard;
 
     console.log('League info:', leagueInfo);
     console.log('Current week:', currentWeek);
-    console.log('Scoreboard wrapper:', scoreboardWrapper);
-    console.log('Scoreboard object:', scoreboardObj);
 
     const allMatchups: MatchupResult[] = [];
     const matchupsByWeek: Record<number, MatchupResult[]> = {};
 
-    // Process current week matchups
-    if (scoreboardObj && scoreboardObj[0]?.matchups) {
-      const matchupsObj = scoreboardObj[0].matchups;
-      const week = parseInt(scoreboardObj[0].week || currentWeek.toString());
+    // Process ALL weeks' matchups for total score calculation
+    const allWeeksLeagueArray = allWeeksData.fantasy_content.league;
+    const allWeeksScoreboardWrapper = allWeeksLeagueArray[1];
+    const allWeeksScoreboardObj = allWeeksScoreboardWrapper?.scoreboard;
 
-      console.log('Matchups object keys:', Object.keys(matchupsObj));
-      console.log('Matchups object:', JSON.stringify(matchupsObj, null, 2));
+    if (allWeeksScoreboardObj) {
+      const scoreboards = Array.isArray(allWeeksScoreboardObj) ? allWeeksScoreboardObj : [allWeeksScoreboardObj];
+      
+      for (const scoreboard of scoreboards) {
+        if (!scoreboard[0]?.matchups) continue;
+        
+        const matchupsObj = scoreboard[0].matchups;
+        const week = parseInt(scoreboard[0].week || currentWeek.toString());
+
+        console.log(`Processing week ${week} - Matchups object keys:`, Object.keys(matchupsObj));
 
       // Yahoo API returns matchups as an object with numeric keys
       for (const key in matchupsObj) {
