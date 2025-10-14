@@ -281,7 +281,7 @@ export default function Home() {
               
               // Pair up individual managers from opposite teams
               const maxIndividuals = Math.max(lilyIndividuals.length, teaganIndividuals.length);
-              const pairedRows: JSX.Element[] = [];
+              const pairedRows: React.ReactElement[] = [];
               
               for (let i = 0; i < maxIndividuals; i++) {
                 const lilyIndividual = lilyIndividuals[i] || null;
