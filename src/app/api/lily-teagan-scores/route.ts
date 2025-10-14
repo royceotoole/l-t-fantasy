@@ -36,16 +36,23 @@ export async function GET() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const standingsData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/standings`) as any;
     
-    // Fetch all weeks' scoreboards to calculate total Lily vs Teagan scores
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const allWeeksData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard;weeks=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26`) as any;
-    
-    // Also fetch current week scoreboard for matchup display
+    // Fetch current week scoreboard first to get the current week number
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const scoreboardData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard`) as any;
+    
+    // Get current week from scoreboard
+    const leagueArray = scoreboardData.fantasy_content.league;
+    const leagueInfo = leagueArray[0];
+    const currentWeek = parseInt(leagueInfo.current_week || '1');
+    
+    // Fetch all weeks from 1 to current week for total score calculation
+    const weeksToFetch = Array.from({ length: currentWeek }, (_, i) => i + 1).join(',');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allWeeksData = await yahooFetch(`/fantasy/v2/league/${leagueKey}/scoreboard;weeks=${weeksToFetch}`) as any;
 
     console.log('Standings data received:', JSON.stringify(standingsData, null, 2));
     console.log('Scoreboard data received:', JSON.stringify(scoreboardData, null, 2));
+    console.log('All weeks data received:', JSON.stringify(allWeeksData, null, 2));
 
     // Parse standings to get official Yahoo records for each team
     const standingsLeagueArray = standingsData.fantasy_content.league;
@@ -87,13 +94,6 @@ export async function GET() {
     }
     
     console.log('Official records from Yahoo:', officialRecords);
-
-    // Get league info from current week scoreboard
-    const leagueArray = scoreboardData.fantasy_content.league;
-    const leagueInfo = leagueArray[0];
-    const currentWeek = parseInt(leagueInfo.current_week || '1');
-
-    console.log('League info:', leagueInfo);
     console.log('Current week:', currentWeek);
 
     const allMatchups: MatchupResult[] = [];
